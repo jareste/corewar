@@ -12,7 +12,8 @@ int log_init()
 {
     char* options;
 
-    m_log_config.LOG_LEVEL = LOG_LEVEL_INFO;
+    // m_log_config.LOG_LEVEL = LOG_LEVEL_INFO;
+    m_log_config.LOG_LEVEL = LOG_LEVEL_DEBUG;
     m_log_config.LOG_FILE_PATH = LOG_FILE;
     m_log_config.LOG_ERASE = true;
 

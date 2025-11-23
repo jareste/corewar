@@ -103,6 +103,7 @@ int write_cor_file(const char *outname, t_header *header, uint8_t *code, int pro
     write(fd, buf, 4);
 
     /* program name */
+    log_msg(LOG_LEVEL_ERROR, "Writing program name: '%s'\n", header->prog_name);
     strncpy(name, header->prog_name, PROG_NAME_LENGTH + 1);
     write(fd, name, PROG_NAME_LENGTH);
 

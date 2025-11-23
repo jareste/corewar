@@ -113,11 +113,13 @@ static int m_parse_int(const char *s, int *out)
 
     errno = 0;
     val = strtol(s, &endptr, 10);
-    if (errno != 0 || endptr == s || *endptr != '\0')
+    log_msg(LOG_LEVEL_DEBUG, "Parsing int Errno=%d, endptr='%d' val=%d\n", errno, endptr==s, *endptr!='\0');
+    if (errno != 0 || endptr == s || (*endptr != '\0' && !isspace((unsigned char)*endptr)))
         return -1;
     if (val < INT_MIN || val > INT_MAX)
         return -1;
     *out = (int)val;
+    log_msg(LOG_LEVEL_DEBUG, "Parsed int: %d\n", *out);
     return 0;
 }
 
@@ -138,18 +140,26 @@ static int m_parse_arg_token(const char *arg_str, t_arg *out)
 {
     char *s = m_skip_spaces((char *)arg_str);
     size_t len = strlen(s);
+    int reg;
+    int val;
+    char* end;
 
     if (len == 0)
         return -1;
 
     if (s[0] == 'r') /* register */
     {
-        int reg;
+        log_msg(LOG_LEVEL_DEBUG, "Parsing register argument: '%s'\n", s);
+        log_msg(LOG_LEVEL_DEBUG, "Length: %zu\n", len);
         if (len < 2)
             return -1;
+
+        reg = 0;
+        m_parse_int(s + 1, &reg);
+        log_msg(LOG_LEVEL_DEBUG, "Register number parsed: %d\n", reg);
         if (m_parse_int(s + 1, &reg) != 0)
             return -1;
-        if (reg < 1 || reg > REG_NUMBER)
+        if (reg < 0 || reg > REG_NUMBER)
             return -1;
 
         out->type = ARG_REG;
@@ -158,19 +168,21 @@ static int m_parse_arg_token(const char *arg_str, t_arg *out)
     }
     else if (s[0] == DIRECT_CHAR) /* % */
     {
+        log_msg(LOG_LEVEL_DEBUG, "Parsing direct argument: '%s'\n", s);
         if (len < 2)
             return -1;
         if (s[1] == LABEL_CHAR) /* '%:label' */
         {
             out->type = ARG_LABEL_DIR;
-            out->u.label = strdup(s + 2);
+            end = s + 2 + strcspn(s + 2, " \t\n\r\f\v");
+            out->u.label = strndup(s + 2, end - (s + 2));
             if (!out->u.label)
                 return -1;
+            log_msg(LOG_LEVEL_DEBUG, "Direct label parsed: '%s' %zu\n", out->u.label, strlen(out->u.label));
             return 0;
         }
         else /* '%42' */
         {
-            int val;
             if (m_parse_int(s + 1, &val) != 0)
                 return -1;
             out->type = ARG_DIR;
@@ -180,17 +192,20 @@ static int m_parse_arg_token(const char *arg_str, t_arg *out)
     }
     else /* indirect */
     {
+        log_msg(LOG_LEVEL_DEBUG, "Parsing indirect argument: '%s'\n", s);
         if (s[0] == LABEL_CHAR) /* ':label' */
         {
             out->type = ARG_LABEL_IND;
-            out->u.label = strdup(s + 1);
+
+            end = s + 2 + strcspn(s + 2, " \t\n\r\f\v");
+            out->u.label = strndup(s + 2, end - (s + 2));
             if (!out->u.label)
                 return -1;
+            log_msg(LOG_LEVEL_DEBUG, "Indirect label parsed: '%s' %zu\n", out->u.label, strlen(out->u.label));
             return 0;
         }
         else /* '42' */
         {
-            int val;
             if (m_parse_int(s, &val) != 0)
                 return -1;
             out->type = ARG_IND;
@@ -209,6 +224,7 @@ static t_instr* m_new_instruction(char* instr_text, int line_no)
     size_t len;
     char* arg_str;
     char* token;
+    char *comment;
     int mask;
 
     inst = NEW(t_instr, 1);
@@ -235,7 +251,11 @@ static t_instr* m_new_instruction(char* instr_text, int line_no)
     memset(inst->args, 0, sizeof(inst->args));
 
     arg_str = m_skip_spaces(end);
+    comment = strchr(arg_str, COMMENT_CHAR);
+    if (comment)
+        *comment = '\0';
     token = strtok(arg_str, ",");
+    log_msg(LOG_LEVEL_DEBUG, "  Parsing arguments: '%s'\n", arg_str);
     while (token && inst->arg_count < 3)
     {
         token = m_skip_spaces(token);
@@ -341,13 +361,25 @@ void m_compute_offsets()
         }
         label = FT_LIST_GET_NEXT(&m_labels, label);
     }
+
+    label = m_labels;
+    t_label* aux;
+    while (label)
+    {
+        if (label->offset == 0 && strcmp(label->name, m_labels->name) != 0)
+        {
+            aux = FT_LIST_GET_NEXT(&m_labels, label);
+            if (aux)
+                label->offset = aux->offset;
+        }
+
+        label = FT_LIST_GET_NEXT(&m_labels, label);
+    }
 }
 
 static inline int m_is_pc_relative_op(const t_op *op)
 {
-    return (op->opcode == 9 /* zjmp */
-         || op->opcode == 12 /* fork */
-         || op->opcode == 15 /* lfork */);
+    return op->has_idx != 0;
 }
 
 static void m_normalize_args()
@@ -509,6 +541,21 @@ int parse_file(const char* filename, t_header* header)
 
             FT_LIST_ADD_LAST(&m_instr, inst);
         }
+        else if (def_label)
+        {
+            /* line with only label */
+            FT_LIST_ADD_LAST(&m_labels, def_label);
+        }
+
+    }
+
+    log_msg(LOG_LEVEL_INFO,"Labels:\n");
+    log_msg(LOG_LEVEL_INFO, "*****************************************************************\n");
+    t_label* l_label = m_labels;
+    while (l_label)
+    {
+        log_msg(LOG_LEVEL_INFO,"  %s at offset %d\n", l_label->name, l_label->offset);
+        l_label = FT_LIST_GET_NEXT(&m_labels, l_label);
     }
 
     fclose(file);
@@ -529,7 +576,15 @@ int parse_file(const char* filename, t_header* header)
         l_inst = FT_LIST_GET_NEXT(&m_instr, l_inst);
     }
 
-    write_cor_file("output.cor", header, code, m_prog_size);
+    char outname[256];
+    char* extension;
+    extension = strrchr(filename, '.');
+    if (extension)
+        snprintf(outname, sizeof(outname), "%.*s.cor", (int)(extension - filename), filename);
+    else
+        snprintf(outname, sizeof(outname), "%s.cor", filename);
+
+    write_cor_file(outname, header, code, m_prog_size);
 
     return 0;
 }
