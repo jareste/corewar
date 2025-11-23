@@ -42,6 +42,7 @@ typedef struct s_label
     list_item_t l;
     char*       name;
     int         offset; /* byte offset where label points */
+    int         line_no;
 } t_label;
 
 #endif

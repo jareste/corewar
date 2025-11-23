@@ -135,9 +135,20 @@ static int m_parse_num32(const char *s, int32_t *out)
     char *endptr;
     long long val;
 
-    errno = 0;
-    val = strtoll(s, &endptr, 10);
+    if (strncmp(s, "0x", 2) == 0 || strncmp(s, "0X", 2) == 0)
+    {
+        /* hexadecimal */
+        s += 2;
+        errno = 0;
+        val = strtoll(s, &endptr, 16);
+    }
+    else
+    {
+        errno = 0;
+        val = strtoll(s, &endptr, 10);
+    }
 
+    log_msg(LOG_LEVEL_DEBUG, "Parsing int32 Errno=%d, endptr='%d' val=%lld\n", errno, endptr==s, val);
     if (errno != 0 || endptr == s || (*endptr != '\0' && !isspace((unsigned char)*endptr)))
         return -1;
 
@@ -357,6 +368,32 @@ error:
     return NULL;
 }
 
+int m_find_nearest_instruction_offset(int line_no)
+{
+    t_instr* inst = m_instr;
+    int nearest_offset = 0;
+    int nearest_line = 0;
+
+    log_msg(LOG_LEVEL_DEBUG, "Finding nearest instruction offset for line %d\n", line_no);
+    while (inst)
+    {
+        log_msg(LOG_LEVEL_DEBUG, "  Checking instruction at line %d offset %d\n", inst->line_no, inst->offset);
+        if (inst->line_no > line_no && (inst->line_no < nearest_line || nearest_line == 0))
+        {
+            nearest_line = inst->line_no;
+            nearest_offset = inst->offset;
+        }
+        inst = FT_LIST_GET_NEXT(&m_instr, inst);
+    }
+
+    if (nearest_line == 0)
+    {
+        return m_prog_size;
+    }
+
+    return nearest_offset;
+}
+
 void m_compute_offsets()
 {
     t_instr* inst;
@@ -412,16 +449,13 @@ void m_compute_offsets()
     }
 
     label = m_labels;
-    t_label* aux;
     while (label)
     {
-        if (label->offset == 0 && strcmp(label->name, m_labels->name) != 0)
+        if (label->offset == 0)
         {
-            aux = FT_LIST_GET_NEXT(&m_labels, label);
-            if (aux)
-                label->offset = aux->offset;
-            else
-                label->offset = m_prog_size;
+            label->offset = m_find_nearest_instruction_offset(label->line_no);
+            log_msg(LOG_LEVEL_DEBUG, "Label '%s' at line %d assigned offset %d\n",
+                    label->name, label->line_no, label->offset);
         }
 
         label = FT_LIST_GET_NEXT(&m_labels, label);
@@ -669,6 +703,7 @@ int parse_file(const char* filename, t_header* header)
                 return ERROR;
             }
 
+            def_label->line_no = line_no;
             /* what remains after ':' is potential instruction */
             instr_part = m_skip_spaces(colon + 1);
             log_msg(LOG_LEVEL_INFO, "Found label '%s' at line %u\n", def_label->name, line_no);
