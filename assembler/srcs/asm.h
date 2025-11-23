@@ -35,6 +35,8 @@ typedef struct s_instr
     t_arg       args[3];
     int         arg_count;
     char*       label; /* label defined on this line (if any) */
+    int         raw_len; /* length of raw data for non-opcode lines */
+    char*       raw; /* raw data for non-opcode lines */
 } t_instr;
 
 typedef struct s_label

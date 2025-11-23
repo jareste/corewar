@@ -16,6 +16,13 @@ int encode_instruction(t_instr *inst, uint8_t *code)
     uint8_t acb;
     int pos = inst->offset; /* Where it's written in the code buffer */
 
+    if (!inst->op)
+    {
+        /* .code raw data */
+        memcpy(&code[pos], inst->raw, inst->raw_len);
+        return pos + inst->raw_len;
+    }
+
     code[pos++] = inst->op->opcode; /* write opcode */
 
     /* argument coding byte (if any) */
@@ -73,7 +80,7 @@ int encode_instruction(t_instr *inst, uint8_t *code)
     }
 
     /* print for debug */
-    log_msg(LOG_LEVEL_INFO, "Encoded instruction at offset %d: ", inst->offset);
+    log_msg(LOG_LEVEL_INFO, "Encoded instruction '%s'[%d] at offset %d: ", inst->op->name, inst->line_no, inst->offset);
     for (i = inst->offset; i < pos; ++i)
     {
         log_msg(LOG_LEVEL_INFO, "%02X ", code[i]);

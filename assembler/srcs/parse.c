@@ -27,6 +27,18 @@ static void m_print_instrs()
     inst = m_instr;
     while (inst)
     {
+        if (!inst->op)
+        {
+            log_msg(LOG_LEVEL_INFO,"  Off[%d] Line %d: .code ", inst->offset, inst->line_no);
+            for (i = 0; i < inst->raw_len; ++i)
+            {
+                log_msg(LOG_LEVEL_INFO,"%02X ", (uint8_t)inst->raw[i]);
+            }
+            log_msg(LOG_LEVEL_INFO,"\n");
+            inst = FT_LIST_GET_NEXT(&m_instr, inst);
+            continue;
+        }
+
         log_msg(LOG_LEVEL_INFO,"  Off[%d] Line %d: %s ", inst->offset, inst->line_no, inst->op->name);
         for (i = 0; i < inst->arg_count; ++i)
         {
@@ -235,8 +247,8 @@ static int m_parse_arg_token(const char *arg_str, t_arg *out)
         {
             out->type = ARG_LABEL_IND;
 
-            end = s + 2 + strcspn(s + 2, " \t\n\r\f\v");
-            out->u.label = strndup(s + 2, end - (s + 2));
+            end = s + 1 + strcspn(s + 1, " \t\n\r\f\v");
+            out->u.label = strndup(s + 1, end - (s + 1));
             if (!out->u.label)
                 return -1;
             log_msg(LOG_LEVEL_DEBUG, "Indirect label parsed: '%s' %zu\n", out->u.label, strlen(out->u.label));
@@ -404,6 +416,15 @@ void m_compute_offsets()
     while (inst)
     {
         inst->offset = offset;
+
+        if (!inst->op) /* .code */
+        {
+            offset += inst->raw_len;
+            inst = FT_LIST_GET_NEXT(&m_instr, inst);
+            continue;
+        }
+
+
         offset += 1; /* opcode */
 
         if (inst->op->has_pcode)
@@ -435,6 +456,19 @@ void m_compute_offsets()
     label = m_labels;
     while (label)
     {
+        if (label->offset == 0)
+        {
+            label->offset = m_find_nearest_instruction_offset(label->line_no);
+            log_msg(LOG_LEVEL_DEBUG, "Label '%s' at line %d assigned offset %d\n",
+                    label->name, label->line_no, label->offset);
+        }
+
+        label = FT_LIST_GET_NEXT(&m_labels, label);
+    }
+
+    label = m_labels;
+    while (label)
+    {
         t_instr* target_inst = m_instr;
         while (target_inst)
         {
@@ -445,19 +479,6 @@ void m_compute_offsets()
             }
             target_inst = FT_LIST_GET_NEXT(&m_instr, target_inst);
         }
-        label = FT_LIST_GET_NEXT(&m_labels, label);
-    }
-
-    label = m_labels;
-    while (label)
-    {
-        if (label->offset == 0)
-        {
-            label->offset = m_find_nearest_instruction_offset(label->line_no);
-            log_msg(LOG_LEVEL_DEBUG, "Label '%s' at line %d assigned offset %d\n",
-                    label->name, label->line_no, label->offset);
-        }
-
         label = FT_LIST_GET_NEXT(&m_labels, label);
     }
 }
@@ -473,7 +494,7 @@ static t_label *find_label(const char *name)
     return NULL;
 }
 
-static int eval_expr(const char *expr, t_instr *inst, int32_t *out)
+static int eval_expr(const char *expr, t_instr *inst, t_arg_type type, int32_t *out)
 {
     const char *s = expr;
     int64_t acc = 0;
@@ -485,6 +506,12 @@ static int eval_expr(const char *expr, t_instr *inst, int32_t *out)
     char *endptr;
     long long v;
     t_label *lab;
+
+    (void)inst;
+
+    log_msg(LOG_LEVEL_DEBUG, "Evaluating expr '%s'\n", expr);
+    log_msg(LOG_LEVEL_DEBUG, "  Initial acc=%lld\n", acc);
+    log_msg(LOG_LEVEL_DEBUG, " instruction %s[%d] at offset %d\n", inst->op->name, inst->line_no, inst->offset);
 
     if (*s == DIRECT_CHAR)
         s++;
@@ -508,6 +535,7 @@ static int eval_expr(const char *expr, t_instr *inst, int32_t *out)
 
         if (*s == LABEL_CHAR)
         {
+            log_msg(LOG_LEVEL_DEBUG, "  Parsing label term in expr\n");
             s++;
             len = 0;
 
@@ -545,12 +573,26 @@ static int eval_expr(const char *expr, t_instr *inst, int32_t *out)
         sign = +1;
     }
 
-    if (m_is_pc_relative_op(inst->op) && has_label)
+    log_msg(LOG_LEVEL_DEBUG, "  Final acc=%lld\n", acc);
+    if ((m_is_pc_relative_op(inst->op) || (type == ARG_IND)) && has_label)
         acc -= inst->offset;
 
+    log_msg(LOG_LEVEL_DEBUG, "  Final acc=%lld\n", acc);
     *out = (int32_t)acc;
     return 0;
 }
+
+// static inline int arg_size(const t_instr *inst, int i)
+// {
+//     switch (inst->args[i].type) {
+//         case ARG_REG: return 1;
+//         case ARG_DIR:
+//         case ARG_LABEL_DIR: return inst->op->has_idx ? 2 : 4;
+//         case ARG_IND:
+//         case ARG_LABEL_IND: return 2;
+//     }
+//     return 0;
+// }
 
 static void m_normalize_args()
 {
@@ -568,7 +610,7 @@ static void m_normalize_args()
 
             if (inst->args[i].expr)
             {
-                if (eval_expr(inst->args[i].expr, inst, &val) != 0)
+                if (eval_expr(inst->args[i].expr, inst, inst->args[i].type, &val) != 0)
                 {
                     ft_assert(false, "Error in extended expression");
                 }
@@ -591,10 +633,12 @@ static void m_normalize_args()
                         log_msg(LOG_LEVEL_DEBUG, "Normalized label '%s'", inst->args[i].u.label);
                         free(inst->args[i].u.label);
 
-                        if (m_is_pc_relative_op(inst->op))
+                        if (m_is_pc_relative_op(inst->op) || (inst->args[i].type == ARG_IND))
                             inst->args[i].u.value = label->offset - inst->offset;
                         else
+                        {
                             inst->args[i].u.value = label->offset;
+                        }
 
                         log_msg(LOG_LEVEL_DEBUG, " to value %d at line %d\n",
                                 inst->args[i].u.value, inst->line_no);
@@ -655,7 +699,13 @@ int parse_file(const char* filename, t_header* header)
         /* remove '\n' at the end of the line */
         buffer[strcspn(buffer, "\n")] = '\0';
 
+        line = m_skip_spaces(buffer);
+        if (*line == '\0' || *line == COMMENT_CHAR)
+            continue;
+
+
         log_msg(LOG_LEVEL_DEBUG, "Read line[%u] '%s'\n", line_no, buffer);
+        log_msg(LOG_LEVEL_DEBUG, "%d, %d\n", strncmp(buffer, ".code", 5), isspace((unsigned char)buffer[5]));
 
         /* We got name or comment? */
         if (strstr(buffer, NAME_CMD_STRING))
@@ -676,11 +726,55 @@ int parse_file(const char* filename, t_header* header)
             log_msg(LOG_LEVEL_INFO, "Extend directive found, extended features enabled.\n");
             continue;
         }
+        else if (strncmp(line, ".code", 5) == 0 && 
+            (line[5] == '\0' || isspace((unsigned char)line[5])))
+        {
+            if (!m_extend_enabled)
+            {
+                log_msg(LOG_LEVEL_ERROR, ".code used without .extend at line %u\n", line_no);
+                return ERROR;
+            }
 
+            // Allocate a t_instr with op == NULL
+            t_instr *inst = NEW(t_instr, 1);
+            memset(inst, 0, sizeof(*inst));
+            inst->line_no = line_no;
+            inst->op = NULL;
 
-        line = m_skip_spaces(buffer);
-        if (*line == '\0' || *line == COMMENT_CHAR)
-            continue;
+            // Parse hex bytes after ".code"
+            char *p = line + 5;
+            p = m_skip_spaces(p);
+
+            uint8_t tmp[256];
+            int     n = 0;
+
+            while (*p) {
+                while (*p && isspace((unsigned char)*p))
+                    p++;
+                if (!*p) break;
+
+                char byte_str[3] = {0};
+                if (!isxdigit((unsigned char)p[0]) ||
+                    !isxdigit((unsigned char)p[1])) {
+                    log_msg(LOG_LEVEL_ERROR, "Bad .code byte at line %u: '%s'\n",
+                            line_no, p);
+                    free(inst);
+                    return ERROR;
+                }
+                byte_str[0] = p[0];
+                byte_str[1] = p[1];
+                unsigned long v = strtoul(byte_str, NULL, 16);
+                tmp[n++] = (uint8_t)v;
+                p += 2;
+            }
+
+            inst->raw = malloc(n);
+            memcpy(inst->raw, tmp, n);
+            inst->raw_len = n;
+
+            FT_LIST_ADD_LAST(&m_instr, inst);
+            continue; // skip normal m_new_instruction
+        }
 
         /* Are we into a label line, or into instruction? */
         colon = strchr(line, LABEL_CHAR);
