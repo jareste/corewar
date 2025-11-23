@@ -170,7 +170,7 @@ static int m_parse_num32(const char *s, int32_t *out)
         return -1;
 
     *out = (int32_t)val;
-    return 0;
+    return endptr - s;
 }
 
 static int m_mask_for_arg_type(t_arg_type t)
@@ -233,7 +233,7 @@ static int m_parse_arg_token(const char *arg_str, t_arg *out)
         }
         else /* '%42' */
         {
-            if (m_parse_num32(s + 1, &val) != 0)
+            if (m_parse_num32(s + 1, &val) == -1)
                 return -1;
             out->type = ARG_DIR;
             out->u.value = val;
@@ -256,7 +256,7 @@ static int m_parse_arg_token(const char *arg_str, t_arg *out)
         }
         else /* '42' */
         {
-            if (m_parse_num32(s, &val) != 0)
+            if (m_parse_num32(s, &val) == -1)
                 return -1;
             out->type = ARG_IND;
             out->u.value = val;
@@ -558,9 +558,16 @@ static int eval_expr(const char *expr, t_instr *inst, t_arg_type type, int32_t *
         }
         else
         {
-            errno = 0;
-            v = strtoll(s, &endptr, 10);
-            if (errno != 0 || endptr == s)
+            // errno = 0;
+            // v = strtoll(s, &endptr, 10);
+            // if (errno != 0 || endptr == s)
+            // {
+            //     log_msg(LOG_LEVEL_ERROR, "Error: Bad number in expr '%s'\n", expr);
+            //     return -1;
+            // }
+            endptr = (char*)s;
+            endptr += m_parse_num32(s, (int32_t *)&v);
+            if (endptr == s || endptr < s)
             {
                 log_msg(LOG_LEVEL_ERROR, "Error: Bad number in expr '%s'\n", expr);
                 return -1;
@@ -728,34 +735,34 @@ int parse_file(const char* filename, t_header* header)
         }
         else if (strncmp(line, ".code", 5) == 0 && 
             (line[5] == '\0' || isspace((unsigned char)line[5])))
-        {
-            if (!m_extend_enabled)
-            {
-                log_msg(LOG_LEVEL_ERROR, ".code used without .extend at line %u\n", line_no);
-                return ERROR;
-            }
+        { /* TODO fixme */
+            // if (!m_extend_enabled)
+            // {
+            //     log_msg(LOG_LEVEL_ERROR, ".code used without .extend at line %u\n", line_no);
+            //     return ERROR;
+            // }
 
-            // Allocate a t_instr with op == NULL
             t_instr *inst = NEW(t_instr, 1);
             memset(inst, 0, sizeof(*inst));
             inst->line_no = line_no;
             inst->op = NULL;
 
-            // Parse hex bytes after ".code"
             char *p = line + 5;
             p = m_skip_spaces(p);
 
             uint8_t tmp[256];
             int     n = 0;
 
-            while (*p) {
+            while (*p)
+            {
                 while (*p && isspace((unsigned char)*p))
                     p++;
                 if (!*p) break;
 
                 char byte_str[3] = {0};
                 if (!isxdigit((unsigned char)p[0]) ||
-                    !isxdigit((unsigned char)p[1])) {
+                    !isxdigit((unsigned char)p[1]))
+                {
                     log_msg(LOG_LEVEL_ERROR, "Bad .code byte at line %u: '%s'\n",
                             line_no, p);
                     free(inst);
@@ -773,7 +780,7 @@ int parse_file(const char* filename, t_header* header)
             inst->raw_len = n;
 
             FT_LIST_ADD_LAST(&m_instr, inst);
-            continue; // skip normal m_new_instruction
+            continue;
         }
 
         /* Are we into a label line, or into instruction? */

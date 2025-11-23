@@ -18,10 +18,20 @@ for src in "$@"; do
     mine="${base}_mine.cor"
     out="${base}.cor"
 
-    # echo "Testing: $src"
     printf '\033[1;36mTesting: %s\033[0m\n' "$src"
 
-    ./asm "$src" 2> /dev/null 1> /dev/null
+    asm_err=$(mktemp)
+    ./asm "$src" > /dev/null 2> "$asm_err"
+    asm_rc=$?
+    if [ $asm_rc -ne 0 ]; then
+        echo "asm exited with code ${asm_rc} for ${src}"
+        [ -s "$asm_err" ] && sed -n '1,200p' "$asm_err"
+        ret=1
+        rm -f -- "$asm_err"
+        continue
+    fi
+    rm -f -- "$asm_err"
+
     if [ ! -f "$out" ]; then
         echo "asm failed to produce ${out}"
         ret=1
@@ -30,7 +40,19 @@ for src in "$@"; do
 
     mv -f -- "$out" "$mine"
 
-    ./asm_linux "$src" 2> /dev/null 1> /dev/null
+    printf '\033[1;36mTesting asm_linux: %s -> %s\033[0m\n' "$src" "$out"
+    asm_linux_err=$(mktemp)
+    ./asm_linux "$src" > /dev/null 2> "$asm_linux_err"
+    asm_linux_rc=$?
+    if [ $asm_linux_rc -ne 0 ]; then
+        echo "asm_linux exited with code ${asm_linux_rc} for ${src}"
+        [ -s "$asm_linux_err" ] && sed -n '1,200p' "$asm_linux_err"
+        ret=1
+        rm -f -- "$asm_linux_err" "$mine"
+        continue
+    fi
+    rm -f -- "$asm_linux_err"
+
     if [ ! -f "$out" ]; then
         echo "asm_linux failed to produce ${out}"
         ret=1
