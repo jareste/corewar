@@ -22,6 +22,7 @@ typedef struct s_arg
         int         value;
         char*       label;
     } u;
+    char* expr;
 
 } t_arg;
 

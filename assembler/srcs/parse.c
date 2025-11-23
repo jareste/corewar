@@ -8,12 +8,14 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <limits.h>
+#include <stdbool.h>
 #include "log.h"
 #include "encode.h"
 
 static t_instr* m_instr = NULL;
 static t_label* m_labels = NULL;
 static int m_prog_size = 0;
+static bool m_extend_enabled = false;
 
 static void m_print_instrs()
 {
@@ -63,6 +65,11 @@ static void m_print_instrs()
     }
 }
 
+static inline int m_is_pc_relative_op(const t_op *op)
+{
+    return op->has_idx != 0;
+}
+
 static char *m_skip_spaces(char *s)
 {
     while (*s && isspace((unsigned char)*s))
@@ -106,7 +113,7 @@ static t_op *m_find_op(const char *name, size_t len)
     return NULL;
 }
 
-static int m_parse_int(const char *s, int *out)
+static int m_parse_reg(const char *s, int *out)
 {
     char *endptr;
     long val;
@@ -120,6 +127,26 @@ static int m_parse_int(const char *s, int *out)
         return -1;
     *out = (int)val;
     log_msg(LOG_LEVEL_DEBUG, "Parsed int: %d\n", *out);
+    return 0;
+}
+
+static int m_parse_num32(const char *s, int32_t *out)
+{
+    char *endptr;
+    long long val;
+
+    errno = 0;
+    val = strtoll(s, &endptr, 10);
+
+    if (errno != 0 || endptr == s || (*endptr != '\0' && !isspace((unsigned char)*endptr)))
+        return -1;
+
+    if (val < 0 && val < INT32_MIN)
+        return -1;
+    if (val > (long long)UINT32_MAX)
+        return -1;
+
+    *out = (int32_t)val;
     return 0;
 }
 
@@ -155,9 +182,9 @@ static int m_parse_arg_token(const char *arg_str, t_arg *out)
             return -1;
 
         reg = 0;
-        m_parse_int(s + 1, &reg);
+        m_parse_reg(s + 1, &reg);
         log_msg(LOG_LEVEL_DEBUG, "Register number parsed: %d\n", reg);
-        if (m_parse_int(s + 1, &reg) != 0)
+        if (m_parse_reg(s + 1, &reg) != 0)
             return -1;
         if (reg < 0 || reg > REG_NUMBER)
             return -1;
@@ -183,7 +210,7 @@ static int m_parse_arg_token(const char *arg_str, t_arg *out)
         }
         else /* '%42' */
         {
-            if (m_parse_int(s + 1, &val) != 0)
+            if (m_parse_num32(s + 1, &val) != 0)
                 return -1;
             out->type = ARG_DIR;
             out->u.value = val;
@@ -206,7 +233,7 @@ static int m_parse_arg_token(const char *arg_str, t_arg *out)
         }
         else /* '42' */
         {
-            if (m_parse_int(s, &val) != 0)
+            if (m_parse_num32(s, &val) != 0)
                 return -1;
             out->type = ARG_IND;
             out->u.value = val;
@@ -259,6 +286,28 @@ static t_instr* m_new_instruction(char* instr_text, int line_no)
     while (token && inst->arg_count < 3)
     {
         token = m_skip_spaces(token);
+
+        if (strchr(token, '+') || strchr(token, '-'))
+        {
+            memset(&inst->args[inst->arg_count], 0, sizeof(t_arg));
+
+            if (token[0] == DIRECT_CHAR)        // '%'
+                inst->args[inst->arg_count].type = ARG_DIR;
+            else
+                inst->args[inst->arg_count].type = ARG_IND;
+
+            inst->args[inst->arg_count].expr = strdup(token);
+            if (!inst->args[inst->arg_count].expr)
+                goto error;
+
+            log_msg(LOG_LEVEL_DEBUG, "  Extended arg[%d]: '%s'\n",
+                    inst->arg_count, token);
+
+            inst->arg_count++;
+            token = strtok(NULL, ",");
+            continue;
+        }
+
 
         if (m_parse_arg_token(token, &inst->args[inst->arg_count]) != 0)
         {
@@ -371,15 +420,102 @@ void m_compute_offsets()
             aux = FT_LIST_GET_NEXT(&m_labels, label);
             if (aux)
                 label->offset = aux->offset;
+            else
+                label->offset = m_prog_size;
         }
 
         label = FT_LIST_GET_NEXT(&m_labels, label);
     }
 }
 
-static inline int m_is_pc_relative_op(const t_op *op)
+static t_label *find_label(const char *name)
 {
-    return op->has_idx != 0;
+    t_label *lab = m_labels;
+    while (lab) {
+        if (strcmp(lab->name, name) == 0)
+            return lab;
+        lab = FT_LIST_GET_NEXT(&m_labels, lab);
+    }
+    return NULL;
+}
+
+static int eval_expr(const char *expr, t_instr *inst, int32_t *out)
+{
+    const char *s = expr;
+    int64_t acc = 0;
+    int sign = +1;
+    int has_label = 0;
+    int len;
+    int64_t term;
+    char name[128];
+    char *endptr;
+    long long v;
+    t_label *lab;
+
+    if (*s == DIRECT_CHAR)
+        s++;
+
+    while (*s)
+    {
+        while (*s && isspace((unsigned char)*s))
+            s++;
+
+        if (*s == '+' || *s == '-')
+        {
+            sign = (*s == '+') ? +1 : -1;
+            s++;
+            continue;
+        }
+
+        if (*s == '\0')
+            break;
+
+        term = 0;
+
+        if (*s == LABEL_CHAR)
+        {
+            s++;
+            len = 0;
+
+            while (s[len] && strchr(LABEL_CHARS, s[len]) != NULL && len < (int)sizeof(name) - 1)
+            {
+                name[len] = s[len];
+                len++;
+            }
+            name[len] = '\0';
+            s += len;
+
+            lab = find_label(name);
+            if (!lab)
+            {
+                log_msg(LOG_LEVEL_ERROR, "Error: Undefined label '%s' in expr '%s'\n", name, expr);
+                return -1;
+            }
+            term = lab->offset;
+            has_label = 1;
+        }
+        else
+        {
+            errno = 0;
+            v = strtoll(s, &endptr, 10);
+            if (errno != 0 || endptr == s)
+            {
+                log_msg(LOG_LEVEL_ERROR, "Error: Bad number in expr '%s'\n", expr);
+                return -1;
+            }
+            term = v;
+            s = endptr;
+        }
+
+        acc += sign * term;
+        sign = +1;
+    }
+
+    if (m_is_pc_relative_op(inst->op) && has_label)
+        acc -= inst->offset;
+
+    *out = (int32_t)acc;
+    return 0;
 }
 
 static void m_normalize_args()
@@ -388,12 +524,26 @@ static void m_normalize_args()
     t_label* label;
     int i;
     bool found;
+    int32_t val;
 
     inst = m_instr;
     while (inst)
     {
         for (i = 0; i < inst->arg_count; ++i)
         {
+
+            if (inst->args[i].expr)
+            {
+                if (eval_expr(inst->args[i].expr, inst, &val) != 0)
+                {
+                    ft_assert(false, "Error in extended expression");
+                }
+                inst->args[i].u.value = val;
+                free(inst->args[i].expr);
+                inst->args[i].expr = NULL;
+                continue;
+            }
+
             if (inst->args[i].type == ARG_LABEL_DIR ||
                 inst->args[i].type == ARG_LABEL_IND)
             {
@@ -486,6 +636,13 @@ int parse_file(const char* filename, t_header* header)
             log_msg(LOG_LEVEL_INFO, "Program Comment: '%s'\n", header->comment);
             continue;
         }
+        else if (strstr(buffer, ".extend"))
+        {
+            m_extend_enabled = true;
+            log_msg(LOG_LEVEL_INFO, "Extend directive found, extended features enabled.\n");
+            continue;
+        }
+
 
         line = m_skip_spaces(buffer);
         if (*line == '\0' || *line == COMMENT_CHAR)
