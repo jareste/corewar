@@ -79,6 +79,10 @@ static void m_print_instrs()
 
 static inline int m_is_pc_relative_op(const t_op *op)
 {
+    // if (strcmp(op->name, "ld") == 0)
+    // {
+    //     return 1;
+    // }
     return op->has_idx != 0;
 }
 
@@ -640,7 +644,7 @@ static void m_normalize_args()
                         log_msg(LOG_LEVEL_DEBUG, "Normalized label '%s'", inst->args[i].u.label);
                         free(inst->args[i].u.label);
 
-                        if (m_is_pc_relative_op(inst->op) || (inst->args[i].type == ARG_IND))
+                        if (m_is_pc_relative_op(inst->op) || (inst->args[i].type == ARG_IND) || (strcmp(inst->op->name, "ld") == 0))
                             inst->args[i].u.value = label->offset - inst->offset;
                         else
                         {
