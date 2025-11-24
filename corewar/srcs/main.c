@@ -46,8 +46,8 @@ void m_run(t_vm* vm)
         proc = vm->procs;
         while (proc)
         {
-            /* here i should be checking if proc->op has to play and move to next. */
-            
+            step_proc(vm, proc);
+
             proc = FT_LIST_GET_NEXT(&vm->procs, proc);
         }
         // log_msg(LOG_LEVEL_DEBUG, "Cycle %d completed\n", vm->cycle);

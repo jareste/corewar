@@ -107,7 +107,7 @@ void write_n_bytes(uint8_t *mem, int addr, int value, int n)
     }
 }
 
-static int arg_size(const t_op *op, int param_type)
+int arg_size(const t_op *op, int param_type)
 {
     if (param_type == PARAM_REGISTER)
         return 1;

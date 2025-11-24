@@ -11,7 +11,7 @@ RELEASE_CFLAGS = -Werror -Wextra -Wall -g -O3
 #########
 
 #########
-FILES = main ft_list ft_malloc log op decode process exec 
+FILES = main ft_list ft_malloc log op decode process 
 
 SRC = $(addsuffix .c, $(FILES))
 
