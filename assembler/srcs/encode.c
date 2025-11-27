@@ -107,34 +107,65 @@ int write_cor_file(const char *outname, t_header *header, uint8_t *code, int pro
     buf[1] = (magic >> 16) & 0xFF;
     buf[2] = (magic >>  8) & 0xFF;
     buf[3] = (magic      ) & 0xFF;
-    write(fd, buf, 4);
+    if (write(fd, buf, 4) != 4)
+    {
+        close(fd);
+        return ERROR;
+    }
 
     /* program name */
     log_msg(LOG_LEVEL_ERROR, "Writing program name: '%s'\n", header->prog_name);
     strncpy(name, header->prog_name, PROG_NAME_LENGTH + 1);
-    write(fd, name, PROG_NAME_LENGTH);
+    if (write(fd, name, PROG_NAME_LENGTH) != PROG_NAME_LENGTH)
+    {
+        close(fd);
+        return ERROR;
+    }
 
     /* null padding */
-    write(fd, zero4, 4);
+    if (write(fd, zero4, 4) != 4)
+    {
+        close(fd);
+        return ERROR;
+    }
 
     /* program size (big endian) */
     buf[0] = (prog_size >> 24) & 0xFF;
     buf[1] = (prog_size >> 16) & 0xFF;
     buf[2] = (prog_size >>  8) & 0xFF;
     buf[3] = (prog_size      ) & 0xFF;
-    write(fd, buf, 4);
+    if (write(fd, buf, 4) != 4)
+    {
+        close(fd);
+        return ERROR;
+    }
 
     /* comment (2048 bytes) */
     strncpy(comment, header->comment, COMMENT_LENGTH + 1);
     log_msg(LOG_LEVEL_ERROR, "Writing comment: '%s'\n", comment);
-    write(fd, comment, COMMENT_LENGTH);
-    write(1, comment, COMMENT_LENGTH);
+    if (write(fd, comment, COMMENT_LENGTH) != COMMENT_LENGTH)
+    {
+        close(fd);
+        return ERROR;
+    }
+    if (write(1, comment, COMMENT_LENGTH) != COMMENT_LENGTH)
+    {
+        close(fd);
+        return ERROR;
+    }
 
     /* more null padding */
-    write(fd, zero4, 4);
-
+    if (write(fd, zero4, 4) != 4)
+    {
+        close(fd);
+        return ERROR;
+    }
     /* program code */
-    write(fd, code, prog_size);
+    if (write(fd, code, prog_size) != prog_size)
+    {
+        close(fd);
+        return ERROR;
+    }
 
     close(fd);
     return 0;

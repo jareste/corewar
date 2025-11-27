@@ -12,7 +12,7 @@
 
 #include "op.h"
 
-t_op    op_tab[17] =
+t_op    op_tab[OP_COUNT] =
 {
 	{"", 0, 0, 0, 0, 0, 0, {0}},
 	{"live", 1, 1, 10, "alive", 0, 0, {PARAM_DIRECT}},

@@ -2,6 +2,7 @@
 #include "log.h"
 #include "corewar.h"
 #include "process.h"
+#include "operations.h"
 
 static int m_pid = 0;
 
@@ -299,14 +300,21 @@ void execute_instruction(t_vm* vm, t_proc* proc)
     ft_assert(!bad_reg, "Invalid register detected");
 
     /* Advance PC after instruction */
-    proc->pc = (proc->pc + total_advance) % MEM_SIZE;
-    log_msg(LOG_LEVEL_DEBUG,
+    if (opcode != 9 /* ZJMP */) /* zjmp already performs a jump lol */
+    {
+        proc->pc = (proc->pc + total_advance) % MEM_SIZE;
+        log_msg(LOG_LEVEL_DEBUG,
             "Process %d: Advanced pc by %d to %d.\n",
             proc->id, total_advance, proc->pc);
+    }
 
     /* TODO: actually execute semantics using 'op' & 'args' */
-    (void)vm;
-    (void)args;
+    if (op_execute(vm, proc, args, opcode) != 0)
+    {
+        log_msg(LOG_LEVEL_ERROR,
+                "Process %d: Error executing opcode %s\n",
+                proc->id, op->name);
+    }
 }
 
 void step_proc(t_vm *vm, t_proc *p)

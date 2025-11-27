@@ -52,6 +52,8 @@
 #define NBR_LIVE				21
 #define MAX_CHECKS				10
 
+#define OP_COUNT				17
+
 /*
 **
 */
