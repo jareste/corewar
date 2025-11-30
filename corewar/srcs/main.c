@@ -27,7 +27,7 @@ void load_champ_into_vm(t_vm* vm, t_champ* champ, int player_id)
     offset = (MEM_SIZE / MAX_PLAYERS) * player_id;
     memcpy(&vm->memory[offset], champ->code, champ->size);
 
-    proc = create_process(new_pid(), offset, player_id + 1);
+    proc = create_process(new_pid(), offset, player_id);
     
     log_msg(LOG_LEVEL_INFO, "Adding %p at offset %p\n", vm->procs, &vm->procs);
     FT_LIST_ADD_FIRST(&vm->procs, proc);

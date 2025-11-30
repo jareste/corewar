@@ -151,27 +151,23 @@ void execute_instruction(t_vm* vm, t_proc* proc)
     uint8_t acb;
     bool bad_reg;
     t_op* op;
+    int prev_pc = proc->pc;
 
-    opcode = vm->memory[proc->pc];
+    opcode = vm->memory[prev_pc];
     if (opcode < 1 || opcode > 16)
-    {
-        log_msg(LOG_LEVEL_WARN,
-                "Process %d: Invalid opcode %02X at pc %d. Cannot execute.\n",
-                proc->id, opcode, proc->pc);
         return;
-    }
 
     op = &op_tab[opcode];
     log_msg(LOG_LEVEL_INFO,
             "Process %d: Executing opcode %s at pc %d.\n",
-            proc->id, op->name, proc->pc);
+            proc->id, op->name, prev_pc);
 
     memset(args, 0, sizeof(args));
 
     /* DEBUG. disass */
-    decode_inst(vm->memory, MEM_SIZE, proc->pc);
+    decode_inst(vm->memory, MEM_SIZE, prev_pc);
 
-    pc = proc->pc + 1; /* after opcode */
+    pc = prev_pc + 1; /* after opcode */
     total_advance = 1; /* start with opcode size */
 
     /* Decode argument types */
@@ -299,15 +295,6 @@ void execute_instruction(t_vm* vm, t_proc* proc)
 
     ft_assert(!bad_reg, "Invalid register detected");
 
-    /* Advance PC after instruction */
-    if (opcode != 9 /* ZJMP */) /* zjmp already performs a jump lol */
-    {
-        proc->pc = (proc->pc + total_advance) % MEM_SIZE;
-        log_msg(LOG_LEVEL_DEBUG,
-            "Process %d: Advanced pc by %d to %d.\n",
-            proc->id, total_advance, proc->pc);
-    }
-
     /* TODO: actually execute semantics using 'op' & 'args' */
     if (op_execute(vm, proc, args, opcode) != 0)
     {
@@ -315,6 +302,16 @@ void execute_instruction(t_vm* vm, t_proc* proc)
                 "Process %d: Error executing opcode %s\n",
                 proc->id, op->name);
     }
+
+    /* Advance PC after instruction */
+    if (opcode != 9 /* ZJMP */) /* zjmp already performs a jump lol */
+    {
+        proc->pc = (prev_pc + total_advance) % MEM_SIZE;
+        log_msg(LOG_LEVEL_DEBUG,
+            "Process %d: Advanced pc by %d to %d.\n",
+            proc->id, total_advance, proc->pc);
+    }
+
 }
 
 void step_proc(t_vm *vm, t_proc *p)
@@ -335,7 +332,6 @@ void step_proc(t_vm *vm, t_proc *p)
         log_msg(LOG_LEVEL_WARN, "Process %d: Invalid opcode %02X at pc %d. Advancing 1 byte.\n",
                 p->id, opcode, p->pc);
         p->pc = (p->pc + 1) % MEM_SIZE;
-        while (1);
         return;
     }
 

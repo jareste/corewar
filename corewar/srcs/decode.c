@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "corewar.h"
+#include "operations.h"
 #include "log.h"
 
 int decode_file(const char* filename, t_champ* champ)
@@ -74,15 +75,6 @@ int decode_file(const char* filename, t_champ* champ)
     return SUCCESS;
 }
 
-int mod_addr(int addr)
-{
-    addr %= MEM_SIZE;
-    if (addr < 0)
-        addr += MEM_SIZE;
-
-    return addr;
-}
-
 int read_n_bytes(uint8_t *mem, int addr, int n)
 {
     int v = 0;
@@ -91,7 +83,7 @@ int read_n_bytes(uint8_t *mem, int addr, int n)
     for (i = 0; i < n; ++i)
     {
         v <<= 8;
-        v |= mem[mod_addr(addr + i)];
+        v |= mem[mem_addr(addr + i)];
     }
 
     return v;
@@ -103,7 +95,7 @@ void write_n_bytes(uint8_t *mem, int addr, int value, int n)
 
     for (i = n - 1; i >= 0; --i)
     {
-        mem[mod_addr(addr + (n - 1 - i))] = (uint8_t)((value >> (i * 8)) & 0xFF);
+        mem[mem_addr(addr + (n - 1 - i))] = (uint8_t)((value >> (i * 8)) & 0xFF);
     }
 }
 
@@ -130,6 +122,6 @@ int get_arg_val(t_vm *vm, t_proc *p, t_arg *a, int apply_idx_mod)
 
     /* indirect */
     addr = p->pc + (apply_idx_mod ? (a->value % IDX_MOD) : a->value);
-    addr = mod_addr(addr);
+    addr = mem_addr(addr);
     return read_n_bytes(vm->memory, addr, 4);
 }
