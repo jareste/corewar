@@ -314,6 +314,32 @@ void execute_instruction(t_vm* vm, t_proc* proc)
 
 }
 
+void proc_check_deads(t_vm *vm)
+{
+    t_proc* proc;
+
+    proc = vm->procs;
+    while (proc)
+    {
+        if (vm->cycle - proc->last_live_cycle >= CYCLE_TO_DIE)
+        {
+            log_msg(LOG_LEVEL_INFO,
+                    "Process %d: has died (last live at cycle %d)\n",
+                    proc->id, proc->last_live_cycle);
+
+            t_proc* to_delete = proc;
+            proc = FT_LIST_GET_NEXT(&vm->procs, proc);
+
+            FT_LIST_POP(&vm->procs, to_delete);
+            free(to_delete);
+            continue;
+        }
+
+        proc = FT_LIST_GET_NEXT(&vm->procs, proc);
+    }
+
+}
+
 void step_proc(t_vm *vm, t_proc *p)
 {
     uint8_t opcode;

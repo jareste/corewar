@@ -3,16 +3,22 @@
 
 typedef int (*op_func_t)(t_vm*, t_proc*, t_arg*);
 
-static int m_op_and(t_vm *vm, t_proc *p, t_arg *args);
-static int m_op_sti(t_vm *vm, t_proc *p, t_arg *args);
-static int m_op_live(t_vm *vm, t_proc *proc, t_arg *args);
-static int m_op_zjmp(t_vm *vm, t_proc *proc, t_arg *args);
+static int m_op_and(t_vm* vm, t_proc* p, t_arg* args);
+static int m_op_sti(t_vm* vm, t_proc* p, t_arg* args);
+static int m_op_st(t_vm* vm, t_proc* p, t_arg* args);
+static int m_op_live(t_vm* vm, t_proc* proc, t_arg* args);
+static int m_op_zjmp(t_vm* vm, t_proc* proc, t_arg* args);
+static int m_op_ld(t_vm* vm, t_proc* p, t_arg* args);
+static int m_op_lld(t_vm* vm, t_proc* p, t_arg* args);
+static int m_op_lfork(t_vm* vm, t_proc* p, t_arg* args);
+static int m_op_fork(t_vm* vm, t_proc* p, t_arg* args);
 
-const op_func_t m_op_funcs[OP_COUNT] = {
+const op_func_t m_op_funcs[OP_COUNT] =
+{
     NULL,               /* 0: no operation */
     m_op_live,          /* 1: live */
-    NULL,               /* 2: ld */
-    NULL,               /* 3: st */
+    m_op_ld,            /* 2: ld */
+    m_op_st,            /* 3: st */
     NULL,               /* 4: add */
     NULL,               /* 5: sub */
     m_op_and,           /* 6: and */
@@ -21,10 +27,10 @@ const op_func_t m_op_funcs[OP_COUNT] = {
     m_op_zjmp,          /* 9: zjmp */
     NULL,               /* 10: ldi */
     m_op_sti,           /* 11: sti */
-    NULL,               /* 12: fork */
-    NULL,               /* 13: lld */
+    m_op_fork,          /* 12: fork */
+    m_op_lld,           /* 13: lld */
     NULL,               /* 14: lldi */
-    NULL,               /* 15: lfork */
+    m_op_lfork,         /* 15: lfork */
     NULL                /* 16: aff */
 };
 
@@ -132,6 +138,36 @@ static int m_op_and(t_vm *vm, t_proc *p, t_arg *args)
     return 0;
 }
 
+static int m_op_st(t_vm *vm, t_proc *p, t_arg *args)
+{
+    int32_t dest;
+    int32_t arg1;
+    int32_t arg2;
+    int32_t offset;
+    int reg = args[0].value;
+
+    if (reg < 1 || reg > REG_NUMBER)
+    {
+        log_msg(LOG_LEVEL_WARN, "Invalid register %d in ST\n", reg);
+        return 0;
+    }
+
+    arg1 = p->regs[reg - 1];
+
+    arg2 = get_value(vm, p, &args[1]);
+
+    offset = arg2 % IDX_MOD;
+
+    dest = mem_addr(p->pc + offset);
+
+    m_mem_write(vm, dest, arg1, 4);
+    log_msg(LOG_LEVEL_INFO,
+        "Process %d: sti r%d (%d) to %d (pc %d + (%d+0) %% IDX_MOD)\n",
+        p->id, reg, arg1, dest, p->pc, arg2);
+
+    return 0;
+}
+
 /* op STI
  * Param1: register (value to store)
  * Param2: value
@@ -140,12 +176,12 @@ static int m_op_and(t_vm *vm, t_proc *p, t_arg *args)
  */
 static int m_op_sti(t_vm *vm, t_proc *p, t_arg *args)
 {
-    int dest;
-    int32_t arg1;
     int32_t arg2;
     int32_t arg3;
     int32_t offset;
-    int reg = args[0].value;
+    t_arg st_args[2];
+    int32_t reg = args[0].value;
+
 
     if (reg < 1 || reg > REG_NUMBER)
     {
@@ -153,23 +189,18 @@ static int m_op_sti(t_vm *vm, t_proc *p, t_arg *args)
         return 0;
     }
 
-    arg1 = p->regs[reg - 1];
-
     arg2 = get_value(vm, p, &args[1]);
     arg3 = get_value(vm, p, &args[2]);
 
     offset = (arg2 + arg3) % IDX_MOD;
 
-    dest = mem_addr(p->pc + offset);   // now p->pc == old_pc
+    st_args[0].type = PARAM_REGISTER;
+    st_args[0].value = reg;
+    st_args[1].type = PARAM_DIRECT;
+    st_args[1].value = offset;
 
-    m_mem_write(vm, dest, arg1, 4);
-    log_msg(LOG_LEVEL_INFO,
-        "Process %d: sti r%d (%d) to %d (pc %d + (%d+%d) %% IDX_MOD)\n",
-        p->id, reg, arg1, dest, p->pc, arg2, arg3);
-
-    return 0;
+    return m_op_st(vm, p, st_args);
 }
-
 
 static int m_op_live(t_vm *vm, t_proc *proc, t_arg *args)
 {
@@ -234,15 +265,104 @@ static int m_op_zjmp(t_vm *vm, t_proc *proc, t_arg *args)
     return 0;
 }
 
+static int m_op_lld(t_vm *vm, t_proc *p, t_arg *args)
+{
+    int32_t arg1;
+    int32_t arg2;
+    int32_t addr;
+
+    (void)vm;
+    if (args[0].type == PARAM_INDIRECT)
+    {
+        /* long load does not use IDX_MOD */
+        addr = p->pc + args[0].value;
+        arg1 = m_mem_read(vm, addr, 4);
+    }
+    else
+    {
+        arg1 = get_value(vm, p, &args[0]);
+    }
+
+    arg2 = get_value(vm, p, &args[1]);
+
+    p->regs[arg2 - 1] = arg1;
+    p->carry = (arg1 == 0);
+
+    log_msg(LOG_LEVEL_INFO,
+        "Process %d: lld %d → r%d\n",
+        p->id, arg1, arg2);
+
+    return 0;
+}
+
+static int m_op_ld(t_vm *vm, t_proc *p, t_arg *args)
+{
+    int32_t arg1;
+    int32_t arg2;
+    t_arg lld_args[2];
+
+    (void)vm;
+    arg1 = get_value(vm, p, &args[0]);
+    arg2 = get_value(vm, p, &args[1]);
+
+    lld_args[0].type = PARAM_DIRECT;
+    lld_args[0].value = arg1;
+    lld_args[1].type = PARAM_REGISTER;
+    lld_args[1].value = arg2;
+
+    return m_op_lld(vm, p, lld_args);
+}
+
+
+static int m_do_fork(t_vm* vm, t_proc* p, int new_pc)
+{
+    int owner_id;
+    t_proc *child;
+
+    owner_id = p->regs[0];
+    child = create_process(new_pid(), new_pc, owner_id);
+
+    memcpy(child->regs, p->regs, sizeof(p->regs));
+    child->carry           = p->carry;
+    child->last_live_cycle = p->last_live_cycle;
+    child->op_wait         = 0;
+    child->opcode          = 0;
+
+    FT_LIST_ADD_FIRST(&vm->procs, child);
+
+    log_msg(LOG_LEVEL_INFO,
+        "Process %d: fork offset %d (%%IDX_MOD=%d) → child %d at pc %d\n",
+        p->id, offset, rel, child->id, child->pc);
+
+    return 0;
+}
+
+static int m_op_fork(t_vm *vm, t_proc *p, t_arg *args)
+{
+    int16_t offset;
+    int rel;
+    int new_pc;
+
+    offset = (int16_t)args[0].value;
+    rel = offset % IDX_MOD;
+    new_pc = mem_addr(p->pc + rel);
+
+    return m_do_fork(vm, p, new_pc);
+}
+
+static int m_op_lfork(t_vm *vm, t_proc *p, t_arg *args)
+{
+    int16_t offset;
+    int new_pc;
+
+    offset = (int16_t)args[0].value;
+    new_pc = mem_addr(p->pc + offset);
+
+    return m_do_fork(vm, p, new_pc);
+}
 
 int op_execute(t_vm *vm, t_proc *proc, t_arg *args, uint8_t op_code)
 {
-    /* Placeholder for actual operation execution logic */
-    (void)vm;
-    (void)proc;
-    (void)args;
-    (void)op_code;
-    
     if (op_code < 1 || op_code >= OP_COUNT)
     {
         log_msg(LOG_LEVEL_ERROR,

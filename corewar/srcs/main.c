@@ -43,6 +43,12 @@ void m_run(t_vm* vm)
     {
         vm->cycle++;
         
+        if (vm->cycle % CYCLE_TO_DIE == 0)
+        {
+            log_msg(LOG_LEVEL_INFO, "Cycle %d: Performing cycle to die check\n", vm->cycle);
+            proc_check_deads(vm);
+        }
+
         proc = vm->procs;
         while (proc)
         {
