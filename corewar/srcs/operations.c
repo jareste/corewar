@@ -173,30 +173,48 @@ static int m_op_and(t_vm *vm, t_proc *p, t_arg *args)
 
 static int m_op_st(t_vm *vm, t_proc *p, t_arg *args)
 {
-    int32_t dest;
-    int32_t arg1;
-    int32_t arg2;
-    int32_t offset;
-    int reg = args[0].value;
+    int32_t src;
+    int addr;
 
-    if (reg < 1 || reg > REG_NUMBER)
+    if (args[0].value < 1 || args[0].value > REG_NUMBER)
     {
-        log_msg(LOG_LEVEL_WARN, "Invalid register %d in ST\n", reg);
+        log_msg(LOG_LEVEL_WARN, "Process %d: ST with invalid src r%d\n",
+                p->id, args[0].value);
         return 0;
     }
 
-    arg1 = p->regs[reg - 1];
+    src = p->regs[args[0].value - 1];
 
-    arg2 = get_value(vm, p, &args[1]);
+    if (args[1].type == PARAM_REGISTER)
+    {
+        if (args[1].value < 1 || args[1].value > REG_NUMBER)
+        {
+            log_msg(LOG_LEVEL_WARN, "Process %d: ST with invalid dst r%d\n",
+                    p->id, args[1].value);
+            return 0;
+        }
 
-    offset = arg2 % IDX_MOD;
+        p->regs[args[1].value - 1] = src;
+        log_msg(LOG_LEVEL_INFO,
+                "Process %d: st r%d (%d) → r%d\n",
+                p->id, args[0].value, src, args[1].value);
+    }
+    else if (args[1].type == PARAM_INDIRECT)
+    {
+        addr = mem_addr(p->pc + (args[1].value % IDX_MOD));
 
-    dest = mem_addr(p->pc + offset);
+        m_mem_write(vm, addr, src, 4);
 
-    m_mem_write(vm, dest, arg1, 4);
-    log_msg(LOG_LEVEL_INFO,
-        "Process %d: sti r%d (%d) to %d (pc %d + (%d+0) %% IDX_MOD)\n",
-        p->id, reg, arg1, dest, p->pc, arg2);
+        log_msg(LOG_LEVEL_INFO,
+                "Process %d: st r%d (%d) → mem[%d] (pc %d + %d %% IDX_MOD)\n",
+                p->id, args[0].value, src, addr, p->pc, args[1].value);
+    }
+    else
+    {
+        log_msg(LOG_LEVEL_WARN,
+                "Process %d: ST with invalid second arg type %d\n",
+                p->id, args[1].type);
+    }
 
     return 0;
 }
@@ -209,30 +227,30 @@ static int m_op_st(t_vm *vm, t_proc *p, t_arg *args)
  */
 static int m_op_sti(t_vm *vm, t_proc *p, t_arg *args)
 {
+    int32_t reg_val;
     int32_t arg2;
     int32_t arg3;
-    int32_t offset;
-    t_arg st_args[2];
-    int32_t reg = args[0].value;
+    int32_t addr;
+    int16_t offset;
 
-
-    if (reg < 1 || reg > REG_NUMBER)
+    if ((args[0].value < 1) || (args[0].value > REG_NUMBER))
     {
-        log_msg(LOG_LEVEL_WARN, "Invalid register %d in STI\n", reg);
+        log_msg(LOG_LEVEL_WARN, "Process %d: STI with invalid src r%d\n",
+                p->id, args[0].value);
         return 0;
     }
 
+    reg_val = p->regs[args[0].value - 1];
     arg2 = get_value(vm, p, &args[1]);
     arg3 = get_value(vm, p, &args[2]);
+    offset = (int16_t)((arg2 + arg3) % IDX_MOD);
+    addr = mem_addr(p->pc + offset);
 
-    offset = (arg2 + arg3) % IDX_MOD;
+    m_mem_write(vm, addr, reg_val, 4);
+    log_msg(LOG_LEVEL_INFO, "Process %d: sti r%d (%d) → mem[%d] (pc %d + (%d+%d) %% IDX_MOD)\n",
+            p->id, args[0].value, reg_val, addr, p->pc, arg2, arg3);
 
-    st_args[0].type = PARAM_REGISTER;
-    st_args[0].value = reg;
-    st_args[1].type = PARAM_DIRECT;
-    st_args[1].value = offset;
-
-    return m_op_st(vm, p, st_args);
+    return 0;
 }
 
 static int m_op_live(t_vm *vm, t_proc *proc, t_arg *args)
