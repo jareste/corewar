@@ -314,20 +314,33 @@ void execute_instruction(t_vm* vm, t_proc* proc)
 
 }
 
+t_champ *get_winner(t_vm *vm)
+{
+    t_champ *champ;
+
+    if (vm->last_alive_player <= 0)
+        return NULL; /* not possible */
+
+    champ = find_champ_by_id(vm, vm->last_alive_player);
+    return champ;
+}
+
 void proc_check_deads(t_vm *vm)
 {
     t_proc* proc;
+    t_proc* to_delete;
+    t_champ *winner;
 
     proc = vm->procs;
     while (proc)
     {
-        if (vm->cycle - proc->last_live_cycle >= CYCLE_TO_DIE)
+        if (vm->cycle - proc->last_live_cycle >= vm->cycle_to_die)
         {
             log_msg(LOG_LEVEL_INFO,
                     "Process %d: has died (last live at cycle %d)\n",
                     proc->id, proc->last_live_cycle);
 
-            t_proc* to_delete = proc;
+            to_delete = proc;
             proc = FT_LIST_GET_NEXT(&vm->procs, proc);
 
             FT_LIST_POP(&vm->procs, to_delete);
@@ -338,6 +351,41 @@ void proc_check_deads(t_vm *vm)
         proc = FT_LIST_GET_NEXT(&vm->procs, proc);
     }
 
+    if (vm->procs == NULL)
+    {
+        log_msg(LOG_LEVEL_INFO, "All processes have died\n");
+        winner = get_winner(vm);
+        if (winner)
+        {
+            log_msg(LOG_LEVEL_INFO,
+                    "The winner is Champion %d: %s\n",
+                    winner->id, winner->name);
+        }
+        else
+        {
+            log_msg(LOG_LEVEL_INFO,
+                    "No winner could be determined.\n");
+        }
+
+        exit(0);
+    }
+
+    if (vm->lives_in_period >= NBR_LIVE)
+    {
+        vm->cycle_to_die -= CYCLE_DELTA;
+        log_msg(LOG_LEVEL_INFO,
+                "Decreasing cycle_to_die to %d\n", vm->cycle_to_die);
+    }
+    vm->lives_in_period = 0;
+
+    if (((vm->cycle / vm->cycle_to_die) % vm->cycle_to_die) == 0)
+    {
+        vm->cycle_to_die -= CYCLE_DELTA;
+        log_msg(LOG_LEVEL_INFO,
+                "Decreasing cycle_to_die to %d\n", vm->cycle_to_die);
+
+        // vm->cycle_to_die = 0;
+    }
 }
 
 void step_proc(t_vm *vm, t_proc *p)

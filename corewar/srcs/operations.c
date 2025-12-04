@@ -1,5 +1,8 @@
+#include <string.h>
 #include "corewar.h"
 #include "log.h"
+#include "operations.h"
+#include "process.h"
 
 typedef int (*op_func_t)(t_vm*, t_proc*, t_arg*);
 
@@ -12,6 +15,7 @@ static int m_op_ld(t_vm* vm, t_proc* p, t_arg* args);
 static int m_op_lld(t_vm* vm, t_proc* p, t_arg* args);
 static int m_op_lfork(t_vm* vm, t_proc* p, t_arg* args);
 static int m_op_fork(t_vm* vm, t_proc* p, t_arg* args);
+static int m_op_add(t_vm *vm, t_proc *p, t_arg *args);
 
 const op_func_t m_op_funcs[OP_COUNT] =
 {
@@ -19,7 +23,7 @@ const op_func_t m_op_funcs[OP_COUNT] =
     m_op_live,          /* 1: live */
     m_op_ld,            /* 2: ld */
     m_op_st,            /* 3: st */
-    NULL,               /* 4: add */
+    m_op_add,           /* 4: add */
     NULL,               /* 5: sub */
     m_op_and,           /* 6: and */
     NULL,               /* 7: or */
@@ -96,10 +100,39 @@ t_champ* find_champ_by_id(t_vm *vm, int id)
 {
     for (int i = 0; i < MAX_PLAYERS; ++i)
     {
+        log_msg(LOG_LEVEL_DEBUG, "Checking champ id %d against %d\n", vm->champs[i].id, id);
         if (vm->champs[i].id == id)
             return &vm->champs[i];
     }
     return NULL;
+}
+
+static int m_op_add(t_vm *vm, t_proc *p, t_arg *args)
+{
+    int r1 = get_value(vm, p, &args[0]);
+    int r2 = get_value(vm, p, &args[1]);
+    int r3 = get_value(vm, p, &args[2]);
+
+ 
+    (void)vm;
+    if (r1 < 1 || r1 > REG_NUMBER ||
+        r2 < 1 || r2 > REG_NUMBER ||
+        r3 < 1 || r3 > REG_NUMBER)
+    {
+        log_msg(LOG_LEVEL_WARN,
+                "Process %d: ADD with invalid register(s): r%d, r%d, r%d\n",
+                p->id, r1, r2, r3);
+        return 0;
+    }
+
+    p->regs[r3 - 1] = p->regs[r1 - 1] + p->regs[r2 - 1];;
+    p->carry = (p->regs[r3 - 1] == 0);
+
+    log_msg(LOG_LEVEL_INFO,
+            "Process %d: add r%d(%d) + r%d(%d) = %d → r%d, carry=%d\n",
+            p->id, r1, p->regs[r1 - 1], r2, p->regs[r2 - 1], p->regs[r3 - 1], r3, p->carry);
+
+    return 0;
 }
 
 /* op AND
@@ -213,14 +246,13 @@ static int m_op_live(t_vm *vm, t_proc *proc, t_arg *args)
     proc->last_live_cycle = vm->cycle;
     vm->lives_in_period++;
 
-    vm->last_alive_player = champ_id;
-
     log_msg(LOG_LEVEL_INFO,
             "Process %d: LIVE called for champ %d\n",
             proc->id, champ_id);
 
-    if (champ)
+    if (champ) /* it exists */
     {
+        vm->last_alive_player = champ_id;
         log_msg(LOG_LEVEL_INFO,
                 "Champ %d (%s) is reported alive!\n",
                 champ->id, champ->name);
@@ -331,8 +363,8 @@ static int m_do_fork(t_vm* vm, t_proc* p, int new_pc)
     FT_LIST_ADD_FIRST(&vm->procs, child);
 
     log_msg(LOG_LEVEL_INFO,
-        "Process %d: fork offset %d (%%IDX_MOD=%d) → child %d at pc %d\n",
-        p->id, offset, rel, child->id, child->pc);
+        "Process %d: fork → child %d at pc %d\n",
+        p->id, child->id, child->pc);
 
     return 0;
 }

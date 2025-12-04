@@ -32,6 +32,8 @@ void load_champ_into_vm(t_vm* vm, t_champ* champ, int player_id)
     log_msg(LOG_LEVEL_INFO, "Adding %p at offset %p\n", vm->procs, &vm->procs);
     FT_LIST_ADD_FIRST(&vm->procs, proc);
 
+    vm->last_alive_player = player_id;
+
     log_msg(LOG_LEVEL_INFO, "Loaded champion '%s' into VM at offset %d\n", champ->name, offset);
 }
 
@@ -43,12 +45,6 @@ void m_run(t_vm* vm)
     {
         vm->cycle++;
         
-        if (vm->cycle % CYCLE_TO_DIE == 0)
-        {
-            log_msg(LOG_LEVEL_INFO, "Cycle %d: Performing cycle to die check\n", vm->cycle);
-            proc_check_deads(vm);
-        }
-
         proc = vm->procs;
         while (proc)
         {
@@ -56,6 +52,13 @@ void m_run(t_vm* vm)
 
             proc = FT_LIST_GET_NEXT(&vm->procs, proc);
         }
+
+        if (vm->cycle % vm->cycle_to_die == 0)
+        {
+            log_msg(LOG_LEVEL_INFO, "Cycle %d: Performing cycle to die check\n", vm->cycle);
+            proc_check_deads(vm);
+        }
+
         // log_msg(LOG_LEVEL_DEBUG, "Cycle %d completed\n", vm->cycle);
     }
 }
