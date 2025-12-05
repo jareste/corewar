@@ -5,15 +5,15 @@
 #include <stdbool.h>
 
 static FILE *m_log_fp        = NULL;
-static log_level  m_log_threshold = LOG_LEVEL_INFO;
+static log_level  m_log_threshold = LOG_I;
 static log_config m_log_config;
 
 int log_init()
 {
     char* options;
 
-    // m_log_config.LOG_LEVEL = LOG_LEVEL_INFO;
-    m_log_config.LOG_LEVEL = LOG_LEVEL_DEBUG;
+    // m_log_config.LOG_LEVEL = LOG_I;
+    m_log_config.LOG_LEVEL = LOG_D;
     m_log_config.LOG_FILE_PATH = LOG_FILE;
     m_log_config.LOG_ERASE = true;
 
@@ -69,16 +69,16 @@ void log_msg(log_level level, const char *fmt, ...)
     vfprintf(m_log_fp, fmt, args);
     fflush(m_log_fp);
 
-    if ((level <= m_log_threshold) || (level == LOG_LEVEL_BOOT))
+    if ((level <= m_log_threshold) || (level == LOG_B))
     {
         switch (level)
         {
-            case LOG_LEVEL_ERROR:
+            case LOG_E:
                 fprintf(stderr, "\033[1;31m");
                 vfprintf(stderr, fmt, args_copy);
                 fprintf(stderr, "\033[0m");
                 break;
-            case LOG_LEVEL_WARN: /* TODO make it yellow */
+            case LOG_W: /* TODO make it yellow */
                 fprintf(stderr, "\033[1;31m");
                 vfprintf(stderr, fmt, args_copy);
                 fprintf(stderr, "\033[0m");
@@ -116,16 +116,16 @@ void log_msg_time(log_level level, const char *fmt, ...)
     vfprintf(m_log_fp, fmt, args);
     fflush(m_log_fp);
 
-    if ((level <= m_log_threshold) || (level == LOG_LEVEL_BOOT))
+    if ((level <= m_log_threshold) || (level == LOG_B))
     {
         switch (level)
         {
-            case LOG_LEVEL_ERROR:
+            case LOG_E:
                 fprintf(stderr, "\033[1;31m[%s] ", ts);
                 vfprintf(stderr, fmt, args_copy);
                 fprintf(stderr, "\033[0m");
                 break;
-            case LOG_LEVEL_WARN: /* TODO make it yellow */
+            case LOG_W: /* TODO make it yellow */
                 fprintf(stderr, "\033[1;31m[%s] ", ts);
                 vfprintf(stderr, fmt, args_copy);
                 fprintf(stderr, "\033[0m");

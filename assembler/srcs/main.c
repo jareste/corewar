@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "asm.h"
-#include "parse.h"
+#include "parser/parse.h"
 #include "log.h"
 
 int main(int argc, char **argv)

@@ -103,7 +103,7 @@ t_champ* find_champ_by_id(t_vm *vm, int id)
 {
     for (int i = 0; i < MAX_PLAYERS; ++i)
     {
-        log_msg(LOG_LEVEL_DEBUG, "Checking champ id %d against %d\n", vm->champs[i].id, id);
+        log_msg(LOG_D, "Checking champ id %d against %d\n", vm->champs[i].id, id);
         if (vm->champs[i].id == id)
             return &vm->champs[i];
     }
@@ -122,7 +122,7 @@ static int m_op_add(t_vm *vm, t_proc *p, t_arg *args)
         r2 < 1 || r2 > REG_NUMBER ||
         r3 < 1 || r3 > REG_NUMBER)
     {
-        log_msg(LOG_LEVEL_WARN,
+        log_msg(LOG_W,
                 "Process %d: ADD with invalid register(s): r%d, r%d, r%d\n",
                 p->id, r1, r2, r3);
         return 0;
@@ -131,7 +131,7 @@ static int m_op_add(t_vm *vm, t_proc *p, t_arg *args)
     p->regs[r3 - 1] = p->regs[r1 - 1] + p->regs[r2 - 1];;
     p->carry = (p->regs[r3 - 1] == 0);
 
-    log_msg(LOG_LEVEL_INFO,
+    log_msg(LOG_I,
             "Process %d: add r%d(%d) + r%d(%d) = %d → r%d, carry=%d\n",
             p->id, r1, p->regs[r1 - 1], r2, p->regs[r2 - 1], p->regs[r3 - 1], r3, p->carry);
 
@@ -150,7 +150,7 @@ static int m_op_sub(t_vm *vm, t_proc *p, t_arg *args)
         r2 < 1 || r2 > REG_NUMBER ||
         r3 < 1 || r3 > REG_NUMBER)
     {
-        log_msg(LOG_LEVEL_WARN,
+        log_msg(LOG_W,
                 "Process %d: SUB with invalid register(s): r%d, r%d, r%d\n",
                 p->id, r1, r2, r3);
         return 0;
@@ -159,7 +159,7 @@ static int m_op_sub(t_vm *vm, t_proc *p, t_arg *args)
     p->regs[r3 - 1] = p->regs[r1 - 1] - p->regs[r2 - 1];;
     p->carry = (p->regs[r3 - 1] == 0);
 
-    log_msg(LOG_LEVEL_INFO,
+    log_msg(LOG_I,
             "Process %d: sub r%d(%d) - r%d(%d) = %d → r%d, carry=%d\n",
             p->id, r1, p->regs[r1 - 1], r2, p->regs[r2 - 1], p->regs[r3 - 1], r3, p->carry);
 
@@ -179,7 +179,7 @@ static int m_op_or(t_vm *vm, t_proc *p, t_arg *args)
 
     if (dest < 1 || dest > REG_NUMBER)
     {
-        log_msg(LOG_LEVEL_WARN, "Invalid register %d in OR\n", dest);
+        log_msg(LOG_W, "Invalid register %d in OR\n", dest);
         return 0;
     }
 
@@ -188,7 +188,7 @@ static int m_op_or(t_vm *vm, t_proc *p, t_arg *args)
     p->regs[dest - 1] = result;
     p->carry = (result == 0);
 
-    log_msg(LOG_LEVEL_INFO,
+    log_msg(LOG_I,
         "Process %d: or %d | %d = %d → r%d\n",
         p->id, arg1, arg2, result, dest);
 
@@ -208,7 +208,7 @@ static int m_op_xor(t_vm *vm, t_proc *p, t_arg *args)
 
     if (dest < 1 || dest > REG_NUMBER)
     {
-        log_msg(LOG_LEVEL_WARN, "Invalid register %d in XOR\n", dest);
+        log_msg(LOG_W, "Invalid register %d in XOR\n", dest);
         return 0;
     }
 
@@ -217,7 +217,7 @@ static int m_op_xor(t_vm *vm, t_proc *p, t_arg *args)
     p->regs[dest - 1] = result;
     p->carry = (result == 0);
 
-    log_msg(LOG_LEVEL_INFO,
+    log_msg(LOG_I,
         "Process %d: xor %d ^ %d = %d → r%d\n",
         p->id, arg1, arg2, result, dest);
 
@@ -235,7 +235,7 @@ static int m_op_aff(t_vm *vm, t_proc *p, t_arg *args)
     reg_num = args[0].value;
     if (reg_num < 1 || reg_num > REG_NUMBER)
     {
-        log_msg(LOG_LEVEL_WARN,
+        log_msg(LOG_W,
                 "Process %d: AFF with invalid register r%d\n",
                 p->id, reg_num);
         return 0;
@@ -243,7 +243,7 @@ static int m_op_aff(t_vm *vm, t_proc *p, t_arg *args)
 
     c = (char)(p->regs[reg_num - 1] % 256);
 
-    log_msg(LOG_LEVEL_INFO,
+    log_msg(LOG_I,
             "Process %d: AFF r%d -> '%c'\n",
             p->id, reg_num, c);
     return 0;
@@ -270,7 +270,7 @@ static int m_op_and(t_vm *vm, t_proc *p, t_arg *args)
 
     if (dest < 1 || dest > REG_NUMBER)
     {
-        log_msg(LOG_LEVEL_WARN, "Invalid register %d in AND\n", dest);
+        log_msg(LOG_W, "Invalid register %d in AND\n", dest);
         return 0;
     }
 
@@ -279,7 +279,7 @@ static int m_op_and(t_vm *vm, t_proc *p, t_arg *args)
     p->regs[dest - 1] = result;
     p->carry = (result == 0);
 
-    log_msg(LOG_LEVEL_INFO,
+    log_msg(LOG_I,
         "Process %d: and %d & %d = %d → r%d\n",
         p->id, arg1, arg2, result, dest);
 
@@ -293,7 +293,7 @@ static int m_op_st(t_vm *vm, t_proc *p, t_arg *args)
 
     if (args[0].value < 1 || args[0].value > REG_NUMBER)
     {
-        log_msg(LOG_LEVEL_WARN, "Process %d: ST with invalid src r%d\n",
+        log_msg(LOG_W, "Process %d: ST with invalid src r%d\n",
                 p->id, args[0].value);
         return 0;
     }
@@ -304,13 +304,13 @@ static int m_op_st(t_vm *vm, t_proc *p, t_arg *args)
     {
         if (args[1].value < 1 || args[1].value > REG_NUMBER)
         {
-            log_msg(LOG_LEVEL_WARN, "Process %d: ST with invalid dst r%d\n",
+            log_msg(LOG_W, "Process %d: ST with invalid dst r%d\n",
                     p->id, args[1].value);
             return 0;
         }
 
         p->regs[args[1].value - 1] = src;
-        log_msg(LOG_LEVEL_INFO,
+        log_msg(LOG_I,
                 "Process %d: st r%d (%d) → r%d\n",
                 p->id, args[0].value, src, args[1].value);
     }
@@ -320,13 +320,13 @@ static int m_op_st(t_vm *vm, t_proc *p, t_arg *args)
 
         m_mem_write(vm, addr, src, 4);
 
-        log_msg(LOG_LEVEL_INFO,
+        log_msg(LOG_I,
                 "Process %d: st r%d (%d) → mem[%d] (pc %d + %d %% IDX_MOD)\n",
                 p->id, args[0].value, src, addr, p->pc, args[1].value);
     }
     else
     {
-        log_msg(LOG_LEVEL_WARN,
+        log_msg(LOG_W,
                 "Process %d: ST with invalid second arg type %d\n",
                 p->id, args[1].type);
     }
@@ -350,7 +350,7 @@ static int m_op_sti(t_vm *vm, t_proc *p, t_arg *args)
 
     if ((args[0].value < 1) || (args[0].value > REG_NUMBER))
     {
-        log_msg(LOG_LEVEL_WARN, "Process %d: STI with invalid src r%d\n",
+        log_msg(LOG_W, "Process %d: STI with invalid src r%d\n",
                 p->id, args[0].value);
         return 0;
     }
@@ -362,7 +362,7 @@ static int m_op_sti(t_vm *vm, t_proc *p, t_arg *args)
     addr = mem_addr(p->pc + offset);
 
     m_mem_write(vm, addr, reg_val, 4);
-    log_msg(LOG_LEVEL_INFO, "Process %d: sti r%d (%d) → mem[%d] (pc %d + (%d+%d) %% IDX_MOD)\n",
+    log_msg(LOG_I, "Process %d: sti r%d (%d) → mem[%d] (pc %d + (%d+%d) %% IDX_MOD)\n",
             p->id, args[0].value, reg_val, addr, p->pc, arg2, arg3);
 
     return 0;
@@ -379,20 +379,20 @@ static int m_op_live(t_vm *vm, t_proc *proc, t_arg *args)
     proc->last_live_cycle = vm->cycle;
     vm->lives_in_period++;
 
-    log_msg(LOG_LEVEL_INFO,
+    log_msg(LOG_I,
             "Process %d: LIVE called for champ %d\n",
             proc->id, champ_id);
 
     if (champ) /* it exists */
     {
         vm->last_alive_player = champ_id;
-        log_msg(LOG_LEVEL_INFO,
+        log_msg(LOG_I,
                 "Champ %d (%s) is reported alive!\n",
                 champ->id, champ->name);
     }
     else
     {
-        log_msg(LOG_LEVEL_WARN,
+        log_msg(LOG_W,
                 "LIVE called with invalid champ id %d\n",
                 champ_id);
     }
@@ -407,7 +407,7 @@ static int m_op_zjmp(t_vm *vm, t_proc *proc, t_arg *args)
 
     (void)vm;
     // proc->carry = 1; /* force it. REMOVE IT LATER! */
-    log_msg(LOG_LEVEL_INFO,
+    log_msg(LOG_I,
             "Process %d: ZJMP called with offset %d (jump %d), carry=%d\n",
             proc->id, offset, jump, proc->carry);
     if (proc->carry)
@@ -415,13 +415,13 @@ static int m_op_zjmp(t_vm *vm, t_proc *proc, t_arg *args)
         proc->pc = (proc->pc + jump) % MEM_SIZE;
         if (proc->pc < 0) proc->pc += MEM_SIZE;
 
-        log_msg(LOG_LEVEL_INFO,
+        log_msg(LOG_I,
                 "Process %d: ZJMP succeeded, jumping by %d → new PC=%d\n",
                 proc->id, jump, proc->pc);
     }
     else
     {
-        log_msg(LOG_LEVEL_INFO,
+        log_msg(LOG_I,
                 "Process %d: ZJMP failed (carry = 0)\n",
                 proc->id);
         proc->pc = (proc->pc + 3) % MEM_SIZE; /* Move past the instruction */
@@ -453,7 +453,7 @@ static int m_op_lld(t_vm *vm, t_proc *p, t_arg *args)
     p->regs[arg2 - 1] = arg1;
     p->carry = (arg1 == 0);
 
-    log_msg(LOG_LEVEL_INFO,
+    log_msg(LOG_I,
         "Process %d: lld %d → r%d\n",
         p->id, arg1, arg2);
 
@@ -495,7 +495,7 @@ static int m_do_fork(t_vm* vm, t_proc* p, int new_pc)
 
     FT_LIST_ADD_FIRST(&vm->procs, child);
 
-    log_msg(LOG_LEVEL_INFO,
+    log_msg(LOG_I,
         "Process %d: fork → child %d at pc %d\n",
         p->id, child->id, child->pc);
 
@@ -530,13 +530,13 @@ int op_execute(t_vm *vm, t_proc *proc, t_arg *args, uint8_t op_code)
 {
     if (op_code < 1 || op_code >= OP_COUNT)
     {
-        log_msg(LOG_LEVEL_ERROR,
+        log_msg(LOG_E,
                 "Process %d: Invalid opcode %d\n",
                 proc->id, op_code);
         return -1; /* Error */
     }
 
-    log_msg(LOG_LEVEL_DEBUG,
+    log_msg(LOG_D,
             "Process %d: Executing operation %d\n",
             proc->id, op_code);
 
@@ -547,7 +547,7 @@ int op_execute(t_vm *vm, t_proc *proc, t_arg *args, uint8_t op_code)
     }
     else
     {
-        log_msg(LOG_LEVEL_WARN,
+        log_msg(LOG_W,
                 "Process %d: Operation %d not implemented yet\n",
                 proc->id, op_code);
     }

@@ -8,11 +8,11 @@
 
 typedef enum
 {
-    LOG_LEVEL_ERROR,
-    LOG_LEVEL_BOOT,
-    LOG_LEVEL_WARN,
-    LOG_LEVEL_INFO,
-    LOG_LEVEL_DEBUG,
+    LOG_E,
+    LOG_B,
+    LOG_W,
+    LOG_I,
+    LOG_D,
 } log_level;
 
 typedef struct

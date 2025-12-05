@@ -85,16 +85,16 @@ void	decode_inst(const uint8_t *code, int code_len, int offset)
 	if (opcode >= 1 && opcode <= 16)
 		op = &op_tab[opcode];
 
-	log_msg(LOG_LEVEL_ERROR, "opcode 0x%02X", opcode);
+	log_msg(LOG_E, "opcode 0x%02X", opcode);
 	if (op)
-		log_msg(LOG_LEVEL_ERROR, " -> %s", op->name);
-	log_msg(LOG_LEVEL_ERROR, " at %d\n", offset);
+		log_msg(LOG_E, " -> %s", op->name);
+	log_msg(LOG_E, " at %d\n", offset);
 
 	acb = 0;
 	if (op && op->has_pcode && pos < code_len)
 	{
 		acb = code[pos++];
-		log_msg(LOG_LEVEL_ERROR, " ACB=0x%02X\n", acb);
+		log_msg(LOG_E, " ACB=0x%02X\n", acb);
 	}
 
 	nargs = op ? op->nb_params : 0;
@@ -118,9 +118,9 @@ void	decode_inst(const uint8_t *code, int code_len, int offset)
 
 		if (atype == REG_CODE) /* register */
 		{
-			if (pos >= code_len) { log_msg(LOG_LEVEL_ERROR, "  truncated REG\n"); return; }
+			if (pos >= code_len) { log_msg(LOG_E, "  truncated REG\n"); return; }
 			r = code[pos++];
-			log_msg(LOG_LEVEL_ERROR, "  arg%d: REG r%u\n", i + 1, r);
+			log_msg(LOG_E, "  arg%d: REG r%u\n", i + 1, r);
 		}
 		else if (atype == DIR_CODE || atype == IND_CODE)
 		{
@@ -131,21 +131,21 @@ void	decode_inst(const uint8_t *code, int code_len, int offset)
 
 			if (pos + size > code_len)
 			{
-				log_msg(LOG_LEVEL_ERROR, "  truncated arg\n");
+				log_msg(LOG_E, "  truncated arg\n");
 				return;
 			}
 
 			val = read_signed(&code[pos], size);
-			log_msg(LOG_LEVEL_ERROR, "  arg%d: %s %d (0x",
+			log_msg(LOG_E, "  arg%d: %s %d (0x",
 					i + 1, atype == DIR_CODE ? "DIR" : "IND", val);
 			for (b = 0; b < size; ++b)
-				log_msg(LOG_LEVEL_ERROR, "%02X", code[pos + b]);
-			log_msg(LOG_LEVEL_ERROR, ")\n");
+				log_msg(LOG_E, "%02X", code[pos + b]);
+			log_msg(LOG_E, ")\n");
 			pos += size;
 		}
 		else
 		{
-			log_msg(LOG_LEVEL_ERROR, "  arg%d: UNKNOWN type (acb mismatch?)\n", i + 1);
+			log_msg(LOG_E, "  arg%d: UNKNOWN type (acb mismatch?)\n", i + 1);
 		}
 	}
 }
@@ -169,7 +169,7 @@ void execute_instruction(t_vm* vm, t_proc* proc)
 		return;
 
 	op = &op_tab[opcode];
-	log_msg(LOG_LEVEL_INFO,
+	log_msg(LOG_I,
 			"Process %d: Executing opcode %s at pc %d.\n",
 			proc->id, op->name, prev_pc);
 
@@ -186,7 +186,7 @@ void execute_instruction(t_vm* vm, t_proc* proc)
 	{
 		if (pc >= MEM_SIZE)
 		{
-			log_msg(LOG_LEVEL_WARN,
+			log_msg(LOG_W,
 					"Process %d: truncated pcode at pc %d\n", proc->id, pc);
 			return;
 		}
@@ -221,7 +221,7 @@ void execute_instruction(t_vm* vm, t_proc* proc)
 			else
 				args[i].type = PARAM_UNKNOWN;
 
-			log_msg(LOG_LEVEL_DEBUG,
+			log_msg(LOG_D,
 					"Arg %d type set to %d from op param_types\n",
 					i + 1, args[i].type);
 		}
@@ -234,7 +234,7 @@ void execute_instruction(t_vm* vm, t_proc* proc)
 		{
 			if (pc >= MEM_SIZE)
 			{
-				log_msg(LOG_LEVEL_WARN,
+				log_msg(LOG_W,
 						"Process %d: truncated register at pc %d\n",
 						proc->id, pc);
 				return;
@@ -243,14 +243,14 @@ void execute_instruction(t_vm* vm, t_proc* proc)
 			pc++;
 			total_advance++;
 
-			log_msg(LOG_LEVEL_DEBUG, "Register arg read r%d\n", args[i].value);
+			log_msg(LOG_D, "Register arg read r%d\n", args[i].value);
 		}
 		else if (args[i].type == PARAM_DIRECT)
 		{
 			size = op->has_idx ? IND_SIZE : DIR_SIZE; /* DIR: 2 or 4 */
 			if (pc + size > MEM_SIZE)
 			{
-				log_msg(LOG_LEVEL_WARN,
+				log_msg(LOG_W,
 						"Process %d: truncated direct at pc %d\n",
 						proc->id, pc);
 				return;
@@ -259,7 +259,7 @@ void execute_instruction(t_vm* vm, t_proc* proc)
 			pc += size;
 			total_advance += size;
 
-			log_msg(LOG_LEVEL_DEBUG,
+			log_msg(LOG_D,
 					"Direct arg read value %d (size=%d)\n",
 					args[i].value, size);
 		}
@@ -268,7 +268,7 @@ void execute_instruction(t_vm* vm, t_proc* proc)
 			size = IND_SIZE;
 			if (pc + size > MEM_SIZE)
 			{
-				log_msg(LOG_LEVEL_WARN,
+				log_msg(LOG_W,
 						"Process %d: truncated indirect at pc %d\n",
 						proc->id, pc);
 				return;
@@ -277,12 +277,12 @@ void execute_instruction(t_vm* vm, t_proc* proc)
 			pc += size;
 			total_advance += size;
 
-			log_msg(LOG_LEVEL_DEBUG,
+			log_msg(LOG_D,
 					"Indirect arg read value %d\n", args[i].value);
 		}
 		else
 		{
-			log_msg(LOG_LEVEL_WARN,
+			log_msg(LOG_W,
 					"Process %d: unknown arg type for arg %d, treating as invalid\n",
 					proc->id, i + 1);
 			/* Assert or simply mark it as invalid and advance? */
@@ -298,7 +298,7 @@ void execute_instruction(t_vm* vm, t_proc* proc)
 			(args[i].value < 1 || args[i].value > REG_NUMBER))
 		{
 			bad_reg = true;
-			log_msg(LOG_LEVEL_WARN,
+			log_msg(LOG_W,
 					"Process %d: invalid register r%d in arg %d\n",
 					proc->id, args[i].value, i + 1);
 		}
@@ -309,7 +309,7 @@ void execute_instruction(t_vm* vm, t_proc* proc)
 	/* TODO: actually execute semantics using 'op' & 'args' */
 	if (op_execute(vm, proc, args, opcode) != 0)
 	{
-		log_msg(LOG_LEVEL_ERROR,
+		log_msg(LOG_E,
 				"Process %d: Error executing opcode %s\n",
 				proc->id, op->name);
 	}
@@ -318,7 +318,7 @@ void execute_instruction(t_vm* vm, t_proc* proc)
 	if (opcode != 9 /* ZJMP */) /* zjmp already performs a jump lol */
 	{
 		proc->pc = (prev_pc + total_advance) % MEM_SIZE;
-		log_msg(LOG_LEVEL_DEBUG,
+		log_msg(LOG_D,
 			"Process %d: Advanced pc by %d to %d.\n",
 			proc->id, total_advance, proc->pc);
 	}
@@ -347,7 +347,7 @@ void proc_check_deads(t_vm *vm)
 	{
 		if (vm->cycle - proc->last_live_cycle >= vm->cycle_to_die)
 		{
-			log_msg(LOG_LEVEL_INFO,
+			log_msg(LOG_I,
 					"Process %d: has died (last live at cycle %d)\n",
 					proc->id, proc->last_live_cycle);
 
@@ -364,17 +364,17 @@ void proc_check_deads(t_vm *vm)
 
 	if (vm->procs == NULL)
 	{
-		log_msg(LOG_LEVEL_INFO, "All processes have died\n");
+		log_msg(LOG_I, "All processes have died\n");
 		winner = get_winner(vm);
 		if (winner)
 		{
-			log_msg(LOG_LEVEL_INFO,
+			log_msg(LOG_I,
 					"The winner is Champion %d: %s\n",
 					winner->id, winner->name);
 		}
 		else
 		{
-			log_msg(LOG_LEVEL_INFO,
+			log_msg(LOG_I,
 					"No winner could be determined.\n");
 		}
 
@@ -384,7 +384,7 @@ void proc_check_deads(t_vm *vm)
 	if (vm->lives_in_period >= NBR_LIVE)
 	{
 		vm->cycle_to_die -= CYCLE_DELTA;
-		log_msg(LOG_LEVEL_INFO,
+		log_msg(LOG_I,
 				"Decreasing cycle_to_die to %d\n", vm->cycle_to_die);
 	}
 	vm->lives_in_period = 0;
@@ -392,7 +392,7 @@ void proc_check_deads(t_vm *vm)
 	if (((vm->cycle / vm->cycle_to_die) % vm->cycle_to_die) == 0)
 	{
 		vm->cycle_to_die -= CYCLE_DELTA;
-		log_msg(LOG_LEVEL_INFO,
+		log_msg(LOG_I,
 				"Decreasing cycle_to_die to %d\n", vm->cycle_to_die);
 
 		// vm->cycle_to_die = 0;
@@ -414,7 +414,7 @@ void step_proc(t_vm *vm, t_proc *p)
 	opcode = vm->memory[p->pc];
 	if (opcode < 1 || opcode > 16)
 	{
-		log_msg(LOG_LEVEL_WARN, "Process %d: Invalid opcode %02X at pc %d. Advancing 1 byte.\n",
+		log_msg(LOG_W, "Process %d: Invalid opcode %02X at pc %d. Advancing 1 byte.\n",
 				p->id, opcode, p->pc);
 		p->pc = (p->pc + 1) % MEM_SIZE;
 		return;
@@ -423,6 +423,6 @@ void step_proc(t_vm *vm, t_proc *p)
 	op = &op_tab[opcode];
 	p->opcode = opcode;
 	p->op_wait = op->nb_cycles - 1; /* minus 1 because we execute one cycle now */
-	log_msg(LOG_LEVEL_INFO, "Process %d: Fetched opcode %s at pc %d. \
+	log_msg(LOG_I, "Process %d: Fetched opcode %s at pc %d. \
 		Will execute in %d cycles.\n", p->id, op->name, p->pc, p->op_wait + 1);
 }

@@ -11,11 +11,11 @@ RELEASE_CFLAGS = -Werror -Wextra -Wall -g -O3
 #########
 
 #########
-FILES = main ft_list ft_malloc parse log op encode
+FILES = main ft_list ft_malloc parse log op encode parse_utils parse_utils2 parse_arg
 
 SRC = $(addsuffix .c, $(FILES))
 
-vpath %.c srcs inc ../op
+vpath %.c srcs inc ../op srcs/parser srcs/encode
 #########
 
 OBJ_DIR = objs

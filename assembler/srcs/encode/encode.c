@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
-#include "asm.h"
+#include "../asm.h"
 #include "log.h"
 
 int encode_instruction(t_instr *inst, uint8_t *code)
@@ -80,12 +80,12 @@ int encode_instruction(t_instr *inst, uint8_t *code)
     }
 
     /* print for debug */
-    log_msg(LOG_LEVEL_INFO, "Encoded instruction '%s'[%d] at offset %d: ", inst->op->name, inst->line_no, inst->offset);
+    log_msg(LOG_I, "Encoded instruction '%s'[%d] at offset %d: ", inst->op->name, inst->line_no, inst->offset);
     for (i = inst->offset; i < pos; ++i)
     {
-        log_msg(LOG_LEVEL_INFO, "%02X ", code[i]);
+        log_msg(LOG_I, "%02X ", code[i]);
     }
-    log_msg(LOG_LEVEL_INFO, "\n");
+    log_msg(LOG_I, "\n");
     return pos;
 }
 
@@ -114,7 +114,7 @@ int write_cor_file(const char *outname, t_header *header, uint8_t *code, int pro
     }
 
     /* program name */
-    log_msg(LOG_LEVEL_ERROR, "Writing program name: '%s'\n", header->prog_name);
+    log_msg(LOG_E, "Writing program name: '%s'\n", header->prog_name);
     strncpy(name, header->prog_name, PROG_NAME_LENGTH + 1);
     if (write(fd, name, PROG_NAME_LENGTH) != PROG_NAME_LENGTH)
     {
@@ -142,7 +142,7 @@ int write_cor_file(const char *outname, t_header *header, uint8_t *code, int pro
 
     /* comment (2048 bytes) */
     strncpy(comment, header->comment, COMMENT_LENGTH + 1);
-    log_msg(LOG_LEVEL_ERROR, "Writing comment: '%s'\n", comment);
+    log_msg(LOG_E, "Writing comment: '%s'\n", comment);
     if (write(fd, comment, COMMENT_LENGTH) != COMMENT_LENGTH)
     {
         close(fd);
