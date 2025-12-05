@@ -25,11 +25,6 @@
 #include "../encode/encode.h"
 #include "parse_internal.h"
 
-// static t_instr* m_instr = NULL;
-// static t_label* m_labels = NULL;
-static int m_prog_size = 0;
-// static bool m_extend_enabled = false;
-
 static t_instr* m_new_instruction(char* instr_text, int line_no)
 {
 	t_instr* inst;
@@ -145,113 +140,13 @@ error:
 	return NULL;
 }
 
-int m_find_nearest_instruction_offset(t_instr* inst_list, int line_no)
+t_label *find_label(t_label *label_list, const char *name)
 {
-	t_instr* inst = inst_list;
-	int nearest_offset = 0;
-	int nearest_line = 0;
+	t_label *lab;
 
-	log_msg(LOG_D, "Finding nearest instruction offset for line %d\n", line_no);
-	while (inst)
+	lab = label_list;
+	while (lab)
 	{
-		log_msg(LOG_D, "  Checking instruction at line %d offset %d\n", inst->line_no, inst->offset);
-		if (inst->line_no > line_no && (inst->line_no < nearest_line || nearest_line == 0))
-		{
-			nearest_line = inst->line_no;
-			nearest_offset = inst->offset;
-		}
-		inst = FT_LIST_GET_NEXT(&inst_list, inst);
-	}
-
-	if (nearest_line == 0)
-	{
-		return m_prog_size;
-	}
-
-	return nearest_offset;
-}
-
-void m_compute_offsets(t_instr* inst_list, t_label* label_list)
-{
-	t_instr* inst;
-	t_label* label;
-	int offset = 0;
-
-	inst = inst_list;
-	while (inst)
-	{
-		inst->offset = offset;
-
-		if (!inst->op) /* .code */
-		{
-			offset += inst->raw_len;
-			inst = FT_LIST_GET_NEXT(&inst_list, inst);
-			continue;
-		}
-
-
-		offset += 1; /* opcode */
-
-		if (inst->op->has_pcode)
-			offset += 1; /* pcode */
-
-		for (int i = 0; i < inst->arg_count; ++i)
-		{
-			switch (inst->args[i].type)
-			{
-				case ARG_REG:
-					offset += 1;
-					break;
-				case ARG_DIR:
-				case ARG_LABEL_DIR:
-					offset += inst->op->has_idx ? 2 : 4;
-					break;
-				case ARG_IND:
-				case ARG_LABEL_IND:
-					offset += 2;
-					break;
-			}
-		}
-
-		inst = FT_LIST_GET_NEXT(&inst_list, inst);
-	}
-
-	m_prog_size = offset;
-
-	label = label_list;
-	while (label)
-	{
-		if (label->offset == 0)
-		{
-			label->offset = m_find_nearest_instruction_offset(inst_list, label->line_no);
-			log_msg(LOG_D, "Label '%s' at line %d assigned offset %d\n",
-					label->name, label->line_no, label->offset);
-		}
-
-		label = FT_LIST_GET_NEXT(&label_list, label);
-	}
-
-	label = label_list;
-	while (label)
-	{
-		t_instr* target_inst = inst_list;
-		while (target_inst)
-		{
-			if (target_inst->label && strcmp(target_inst->label, label->name) == 0)
-			{
-				label->offset = target_inst->offset;
-				break;
-			}
-			target_inst = FT_LIST_GET_NEXT(&inst_list, target_inst);
-		}
-		label = FT_LIST_GET_NEXT(&label_list, label);
-	}
-}
-
-static t_label *find_label(t_label *label_list, const char *name)
-{
-	t_label *lab = label_list;
-	while (lab) {
 		if (strcmp(lab->name, name) == 0)
 			return lab;
 		lab = FT_LIST_GET_NEXT(&label_list, lab);
@@ -620,7 +515,8 @@ int parse_file(const char* filename, t_header* header)
 	}
 
 	fclose(file);
-	m_compute_offsets(instr_list, label_list);
+	int prog_size = 0;
+	prog_size = m_compute_offsets(instr_list, label_list);
 	m_normalize_args(instr_list, label_list);
 	log_msg(LOG_I, "Finished parsing file %s\n", filename);
 	log_msg(LOG_I, "#########################################################\n");
@@ -644,7 +540,7 @@ int parse_file(const char* filename, t_header* header)
 	else
 		snprintf(outname, sizeof(outname), "%s.cor", filename);
 
-	write_cor_file(outname, header, code, m_prog_size);
+	write_cor_file(outname, header, code, prog_size);
     exit(0); /* TODO fix leaks. */
 
 	return 0;

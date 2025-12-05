@@ -1,26 +1,40 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_atoi.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: jareste- <jareste-@student.42barcel>       +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/05/03 12:24:26 by jareste-          #+#    #+#             */
+/*   Updated: 2023/05/08 23:47:53 by jareste-         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "log.h"
 #include <stdarg.h>
 #include <time.h>
 #include <string.h>
 #include <stdbool.h>
 
-static FILE *m_log_fp        = NULL;
-static log_level  m_log_threshold = LOG_I;
-static log_config m_log_config;
+#ifdef DEBUG
 
-int log_init()
+static FILE *m_log_fp        = NULL;
+static t_log_level  m_log_threshold = LOG_I;
+static t_log_config m_log_config;
+
+int log_init(void)
 {
     char* options;
 
     // m_log_config.LOG_LEVEL = LOG_I;
-    m_log_config.LOG_LEVEL = LOG_D;
-    m_log_config.LOG_FILE_PATH = LOG_FILE;
-    m_log_config.LOG_ERASE = true;
+    m_log_config.log_level = LOG_D;
+    m_log_config.log_file_path = LOG_FILE;
+    m_log_config.log_erase = true;
 
-    options = m_log_config.LOG_ERASE == true ? "w+" : "a";
-    m_log_threshold = m_log_config.LOG_LEVEL;
+    options = m_log_config.log_erase == true ? "w+" : "a";
+    m_log_threshold = m_log_config.log_level;
     
-    m_log_fp = fopen(m_log_config.LOG_FILE_PATH, options);
+    m_log_fp = fopen(m_log_config.log_file_path, options);
     if (!m_log_fp)
     {
         perror("fopen");
@@ -50,7 +64,7 @@ static void get_timestamp(char *buf, size_t len)
     strftime(buf, len, "%Y-%m-%d %H:%M:%S", &tm_info);
 }
 
-void log_msg(log_level level, const char *fmt, ...)
+void log_msg(t_log_level level, const char *fmt, ...)
 {
     va_list args, args_copy;
     static bool inside_logger = false;
@@ -94,7 +108,7 @@ void log_msg(log_level level, const char *fmt, ...)
     inside_logger = false;
 }
 
-void log_msg_time(log_level level, const char *fmt, ...)
+void log_msg_time(t_log_level level, const char *fmt, ...)
 {
     va_list args, args_copy;
     static bool inside_logger = false;
@@ -141,3 +155,28 @@ void log_msg_time(log_level level, const char *fmt, ...)
     va_end(args);
     inside_logger = false;
 }
+
+#else
+
+int log_init(void)
+{
+    return 0;
+}
+
+void log_close(void)
+{
+}
+
+void log_msg_time(t_log_level level, const char *fmt, ...)
+{
+    (void)level;
+    (void)fmt;
+}
+
+void log_msg(t_log_level level, const char *fmt, ...)
+{
+    (void)level;
+    (void)fmt;
+}
+
+#endif /* DEBUG */

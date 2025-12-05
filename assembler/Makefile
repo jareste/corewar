@@ -11,7 +11,8 @@ RELEASE_CFLAGS = -Werror -Wextra -Wall -g -O3
 #########
 
 #########
-FILES = main ft_list ft_malloc parse log op encode parse_utils parse_utils2 parse_arg
+FILES = main ft_list ft_malloc parse log op encode parse_utils parse_utils2 parse_arg \
+		 offsets
 
 SRC = $(addsuffix .c, $(FILES))
 
@@ -37,6 +38,14 @@ $(OBJ_DIR)/%.o: %.c
 all: .gitignore
 	
 	$(MAKE) $(NAME)
+
+debug: CFLAGS = -Werror -Wextra -Wall -g -fsanitize=address -O3 -Iinc -lpthread -DDEBUG
+debug: all
+	@echo "DEBUG BUILD DONE  "
+
+dre: CFLAGS = -Werror -Wextra -Wall -g -fsanitize=address -O3 -Iinc -lpthread -DDEBUG
+dre: re
+	@echo "DEBUG REBUILD DONE  "
 
 $(NAME): $(OBJ) Makefile
 	$(CC) $(CFLAGS) $(OBJ) -ldl -lpthread -o $(NAME) $(LDFLAGS)

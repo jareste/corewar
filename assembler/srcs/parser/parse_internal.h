@@ -30,4 +30,12 @@ int		m_mask_for_arg_type(t_arg_type t);
 /* parse_arg.c */
 int		m_parse_arg_token(const char *arg_str, t_arg *out);
 
+/* offsets.c */
+int		m_find_nearest_offset(t_instr* inst_list, int line_no, int prog_size);
+int		m_compute_inst_size(t_instr *inst);
+int		m_compute_all_instructions_size(t_instr *inst_list);
+void	m_check_orphan_labels(t_label *label_list, t_instr *inst_list);
+void	m_compute_all_labels(t_label *label_list, t_instr *il, int off);
+int		m_compute_offsets(t_instr *inst_list, t_label *label_list);
+
 #endif /* PARSE_INTERNAL_H */
