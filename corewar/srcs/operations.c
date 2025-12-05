@@ -4,30 +4,33 @@
 #include "operations.h"
 #include "process.h"
 
-typedef int (*op_func_t)(t_vm*, t_proc*, t_arg*);
 
-static int m_op_and(t_vm* vm, t_proc* p, t_arg* args);
-static int m_op_sti(t_vm* vm, t_proc* p, t_arg* args);
-static int m_op_st(t_vm* vm, t_proc* p, t_arg* args);
-static int m_op_live(t_vm* vm, t_proc* proc, t_arg* args);
-static int m_op_zjmp(t_vm* vm, t_proc* proc, t_arg* args);
-static int m_op_ld(t_vm* vm, t_proc* p, t_arg* args);
-static int m_op_lld(t_vm* vm, t_proc* p, t_arg* args);
-static int m_op_lfork(t_vm* vm, t_proc* p, t_arg* args);
-static int m_op_fork(t_vm* vm, t_proc* p, t_arg* args);
-static int m_op_add(t_vm *vm, t_proc *p, t_arg *args);
+static int  m_op_and(t_vm* vm, t_proc* p, t_arg* args);
+static int  m_op_sti(t_vm* vm, t_proc* p, t_arg* args);
+static int  m_op_st(t_vm* vm, t_proc* p, t_arg* args);
+static int  m_op_live(t_vm* vm, t_proc* proc, t_arg* args);
+static int  m_op_zjmp(t_vm* vm, t_proc* proc, t_arg* args);
+static int  m_op_ld(t_vm* vm, t_proc* p, t_arg* args);
+static int  m_op_lld(t_vm* vm, t_proc* p, t_arg* args);
+static int  m_op_lfork(t_vm* vm, t_proc* p, t_arg* args);
+static int  m_op_fork(t_vm* vm, t_proc* p, t_arg* args);
+static int  m_op_add(t_vm *vm, t_proc *p, t_arg *args);
+static int  m_op_sub(t_vm *vm, t_proc *p, t_arg *args);
+static int  m_op_xor(t_vm *vm, t_proc *p, t_arg *args);
+static int  m_op_or(t_vm *vm, t_proc *p, t_arg *args);
+static int  m_op_aff(t_vm *vm, t_proc *p, t_arg *args);
 
-const op_func_t m_op_funcs[OP_COUNT] =
+static const op_func_t m_op_funcs[OP_COUNT] =
 {
     NULL,               /* 0: no operation */
     m_op_live,          /* 1: live */
     m_op_ld,            /* 2: ld */
     m_op_st,            /* 3: st */
     m_op_add,           /* 4: add */
-    NULL,               /* 5: sub */
+    m_op_sub,           /* 5: sub */
     m_op_and,           /* 6: and */
-    NULL,               /* 7: or */
-    NULL,               /* 8: xor */
+    m_op_or,            /* 7: or */
+    m_op_xor,           /* 8: xor */
     m_op_zjmp,          /* 9: zjmp */
     NULL,               /* 10: ldi */
     m_op_sti,           /* 11: sti */
@@ -35,7 +38,7 @@ const op_func_t m_op_funcs[OP_COUNT] =
     m_op_lld,           /* 13: lld */
     NULL,               /* 14: lldi */
     m_op_lfork,         /* 15: lfork */
-    NULL                /* 16: aff */
+    m_op_aff            /* 16: aff */
 };
 
 int mem_addr(int addr)
@@ -134,6 +137,118 @@ static int m_op_add(t_vm *vm, t_proc *p, t_arg *args)
 
     return 0;
 }
+
+static int m_op_sub(t_vm *vm, t_proc *p, t_arg *args)
+{
+    int r1 = get_value(vm, p, &args[0]);
+    int r2 = get_value(vm, p, &args[1]);
+    int r3 = get_value(vm, p, &args[2]);
+
+ 
+    (void)vm;
+    if (r1 < 1 || r1 > REG_NUMBER ||
+        r2 < 1 || r2 > REG_NUMBER ||
+        r3 < 1 || r3 > REG_NUMBER)
+    {
+        log_msg(LOG_LEVEL_WARN,
+                "Process %d: SUB with invalid register(s): r%d, r%d, r%d\n",
+                p->id, r1, r2, r3);
+        return 0;
+    }
+
+    p->regs[r3 - 1] = p->regs[r1 - 1] - p->regs[r2 - 1];;
+    p->carry = (p->regs[r3 - 1] == 0);
+
+    log_msg(LOG_LEVEL_INFO,
+            "Process %d: sub r%d(%d) - r%d(%d) = %d → r%d, carry=%d\n",
+            p->id, r1, p->regs[r1 - 1], r2, p->regs[r2 - 1], p->regs[r3 - 1], r3, p->carry);
+
+    return 0;
+}
+
+static int m_op_or(t_vm *vm, t_proc *p, t_arg *args)
+{
+    int32_t arg1;
+    int32_t arg2;
+    int32_t result;
+    int dest;
+
+    arg1 = get_value(vm, p, &args[0]);
+    arg2 = get_value(vm, p, &args[1]);
+    dest = args[2].value;
+
+    if (dest < 1 || dest > REG_NUMBER)
+    {
+        log_msg(LOG_LEVEL_WARN, "Invalid register %d in OR\n", dest);
+        return 0;
+    }
+
+    result = arg1 | arg2;
+
+    p->regs[dest - 1] = result;
+    p->carry = (result == 0);
+
+    log_msg(LOG_LEVEL_INFO,
+        "Process %d: or %d | %d = %d → r%d\n",
+        p->id, arg1, arg2, result, dest);
+
+    return 0;
+}
+
+static int m_op_xor(t_vm *vm, t_proc *p, t_arg *args)
+{
+    int32_t arg1;
+    int32_t arg2;
+    int32_t result;
+    int dest;
+
+    arg1 = get_value(vm, p, &args[0]);
+    arg2 = get_value(vm, p, &args[1]);
+    dest = args[2].value;
+
+    if (dest < 1 || dest > REG_NUMBER)
+    {
+        log_msg(LOG_LEVEL_WARN, "Invalid register %d in XOR\n", dest);
+        return 0;
+    }
+
+    result = arg1 ^ arg2;
+
+    p->regs[dest - 1] = result;
+    p->carry = (result == 0);
+
+    log_msg(LOG_LEVEL_INFO,
+        "Process %d: xor %d ^ %d = %d → r%d\n",
+        p->id, arg1, arg2, result, dest);
+
+    return 0;
+}
+
+static int m_op_aff(t_vm *vm, t_proc *p, t_arg *args)
+{
+    int reg_num;
+    char c;
+
+    if (!vm->aff_enabled)
+        return 0; /* AFF disabled */
+
+    reg_num = args[0].value;
+    if (reg_num < 1 || reg_num > REG_NUMBER)
+    {
+        log_msg(LOG_LEVEL_WARN,
+                "Process %d: AFF with invalid register r%d\n",
+                p->id, reg_num);
+        return 0;
+    }
+
+    c = (char)(p->regs[reg_num - 1] % 256);
+
+    log_msg(LOG_LEVEL_INFO,
+            "Process %d: AFF r%d -> '%c'\n",
+            p->id, reg_num, c);
+    return 0;
+}
+
 
 /* op AND
  * Param1: value
