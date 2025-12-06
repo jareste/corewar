@@ -13,20 +13,20 @@ typedef enum
     LOG_W,
     LOG_I,
     LOG_D,
-} log_level;
+} t_log_level;
 
 typedef struct
 {
-    log_level LOG_LEVEL;
+    t_log_level LOG_LEVEL;
     char* LOG_FILE_PATH;
     bool LOG_ERASE;
-} log_config;
+} t_log_config;
 
 int log_init();
 
 void log_close(void);
 
-void log_msg(log_level level, const char *fmt, ...);
-void log_msg_time(log_level level, const char *fmt, ...);
+void log_msg(t_log_level level, const char *fmt, ...);
+void log_msg_time(t_log_level level, const char *fmt, ...);
 
 #endif /* LOG_H */

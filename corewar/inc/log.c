@@ -5,8 +5,8 @@
 #include <stdbool.h>
 
 static FILE *m_log_fp        = NULL;
-static log_level  m_log_threshold = LOG_I;
-static log_config m_log_config;
+static t_log_level  m_log_threshold = LOG_I;
+static t_log_config m_log_config;
 
 int log_init()
 {
@@ -50,7 +50,7 @@ static void get_timestamp(char *buf, size_t len)
     strftime(buf, len, "%Y-%m-%d %H:%M:%S", &tm_info);
 }
 
-void log_msg(log_level level, const char *fmt, ...)
+void log_msg(t_log_level level, const char *fmt, ...)
 {
     va_list args, args_copy;
     static bool inside_logger = false;
@@ -94,7 +94,7 @@ void log_msg(log_level level, const char *fmt, ...)
     inside_logger = false;
 }
 
-void log_msg_time(log_level level, const char *fmt, ...)
+void log_msg_time(t_log_level level, const char *fmt, ...)
 {
     va_list args, args_copy;
     static bool inside_logger = false;
