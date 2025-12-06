@@ -6,6 +6,10 @@ if [ $# -eq 0 ]; then
 fi
 
 ret=0
+asm_linux_err_count=0
+asm_err_count=0
+ok_count=0
+ko_count=0
 
 for src in "$@"; do
     [ -f "$src" ] || { echo "Skipping missing: $src"; continue; }
@@ -29,6 +33,7 @@ for src in "$@"; do
         echo "asm_linux exited with code ${asm_linux_rc} for ${src}"
         [ -s "$asm_linux_err" ] && sed -n '1,200p' "$asm_linux_err"
         ret=1
+        asm_linux_err_count=$((asm_linux_err_count + 1))
         rm -f -- "$asm_linux_err" "$linux"
         continue
     fi
@@ -38,6 +43,7 @@ for src in "$@"; do
         echo "asm_linux failed to produce ${out}"
         ret=1
         rm -f -- "$linux"
+        asm_linux_err_count=$((asm_linux_err_count + 1))
         continue
     fi
 
@@ -51,6 +57,7 @@ for src in "$@"; do
         echo "asm exited with code ${asm_rc} for ${src}"
         [ -s "$asm_err" ] && sed -n '1,200p' "$asm_err"
         ret=1
+        asm_err_count=$((asm_err_count + 1))
         rm -f -- "$asm_err"
         continue
     fi
@@ -59,35 +66,29 @@ for src in "$@"; do
     if [ ! -f "$out" ]; then
         echo "asm failed to produce ${out}"
         ret=1
+        asm_err_count=$((asm_err_count + 1))
         continue
     fi
 
     mv -f -- "$out" "$mine"
 
-    # printf '\033[1;36mTesting asm_linux: %s -> %s\033[0m\n' "$src" "$out"
-    # asm_linux_err=$(mktemp)
-    # ./asm_linux "$src" > /dev/null 2> "$asm_linux_err"
-    # asm_linux_rc=$?
-    # if [ $asm_linux_rc -ne 0 ]; then
-    #     echo "asm_linux exited with code ${asm_linux_rc} for ${src}"
-    #     [ -s "$asm_linux_err" ] && sed -n '1,200p' "$asm_linux_err"
-    #     ret=1
-    #     rm -f -- "$asm_linux_err" "$mine"
-    #     continue
-    # fi
-    # rm -f -- "$asm_linux_err"
-
-    
-
     if cmp -s -- "$linux" "$mine"; then
         printf '\033[1;32mOK: %s\033[0m\n' "$src"
+        ok_count=$((ok_count + 1))
     else
         echo "DIFF: $src (files ${mine} != ${out})"
+        ko_count=$((ko_count + 1))
         ret=1
     fi
 
     rm -f -- "$mine"
     rm -f -- "$out"
 done
+
+echo "Summary:"
+echo "  asm_linux errors: $asm_linux_err_count"
+echo "  asm errors:       $asm_err_count"
+echo "  OK:               $ok_count"
+echo "  KO:               $ko_count"
 
 exit $ret
