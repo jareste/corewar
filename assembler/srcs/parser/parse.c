@@ -39,118 +39,30 @@ t_label	*find_label(t_label *label_list, const char *name)
 	return (NULL);
 }
 
-static int	eval_expr(const char *expr, t_instr *inst, t_arg_type type, int32_t *out, t_label *label_list)
+static void	m_normalize_args(t_instr *inst_list, t_label *label_list)
 {
-	const char *s = expr;
-	int64_t acc = 0;
-	int sign = +1;
-	int has_label = 0;
-	int len;
-	int64_t term;
-	char name[128];
-	char *endptr;
-	long long v;
-	t_label *lab;
-
-	(void)inst;
-	log_msg(LOG_D, "Evaluating expr '%s'\n", expr);
-	log_msg(LOG_D, "  Initial acc=%lld\n", acc);
-	log_msg(LOG_D, " instruction %s[%d] at offset %d\n", inst->op->name, inst->line_no, inst->offset);
-	if (*s == DIRECT_CHAR)
-		s++;
-	while (*s)
-	{
-		while (*s && isspace((unsigned char)*s))
-			s++;
-
-		if (*s == '+' || *s == '-')
-		{
-			sign = (*s == '+') ? +1 : -1;
-			s++;
-			continue;
-		}
-
-		if (*s == '\0')
-			break;
-
-		term = 0;
-
-		if (*s == LABEL_CHAR)
-		{
-			log_msg(LOG_D, "  Parsing label term in expr\n");
-			s++;
-			len = 0;
-
-			while (s[len] && strchr(LABEL_CHARS, s[len]) != NULL && len < (int)sizeof(name) - 1)
-			{
-				name[len] = s[len];
-				len++;
-			}
-			name[len] = '\0';
-			s += len;
-
-			lab = find_label(label_list, name);
-			if (!lab)
-			{
-				log_msg(LOG_E, "Error: Undefined label '%s' in expr '%s'\n", name, expr);
-				return -1;
-			}
-			term = lab->offset;
-			has_label = 1;
-		}
-		else
-		{
-			endptr = (char*)s;
-			endptr += m_parse_num32(s, (int32_t *)&v);
-			if (endptr == s || endptr < s)
-			{
-				log_msg(LOG_E, "Error: Bad number in expr '%s'\n", expr);
-				return -1;
-			}
-			term = v;
-			s = endptr;
-		}
-
-		acc += sign * term;
-		sign = +1;
-	}
-
-	log_msg(LOG_D, "  Final acc=%lld\n", acc);
-	if ((m_is_pc_relative_op(inst->op) || (type == ARG_IND)) && has_label)
-		acc -= inst->offset;
-
-	log_msg(LOG_D, "  Final acc=%lld\n", acc);
-	*out = (int32_t)acc;
-	return 0;
-}
-
-static void m_normalize_args(t_instr* inst_list, t_label* label_list)
-{
-	t_instr* inst;
-	t_label* label;
-	int i;
-	bool found;
-	int32_t val;
+	t_instr	*inst;
+	t_label	*label;
+	int		i;
+	bool	found;
+	int32_t	val;
 
 	inst = inst_list;
 	while (inst)
 	{
-		for (i = 0; i < inst->arg_count; ++i)
+		i = 0;
+		while (i < inst->arg_count)
 		{
-
 			if (inst->args[i].expr)
 			{
-				if (eval_expr(inst->args[i].expr, inst, inst->args[i].type, &val, label_list) != 0)
-				{
+				if (eval_expr(inst, i, &val, label_list) != 0)
 					ft_assert(false, "Error in extended expression");
-				}
+				log_msg(LOG_D, "  Final acc=%lld\n", (long long)val);
 				inst->args[i].u_.value = val;
 				free(inst->args[i].expr);
 				inst->args[i].expr = NULL;
-				continue;
 			}
-
-			if (inst->args[i].type == ARG_LABEL_DIR ||
+			else if (inst->args[i].type == ARG_LABEL_DIR ||
 				inst->args[i].type == ARG_LABEL_IND)
 			{
 				label = label_list;
@@ -162,14 +74,10 @@ static void m_normalize_args(t_instr* inst_list, t_label* label_list)
 						inst->args[i].type = (inst->args[i].type == ARG_LABEL_DIR) ? ARG_DIR : ARG_IND;
 						log_msg(LOG_D, "Normalized label '%s'", inst->args[i].u_.label);
 						free(inst->args[i].u_.label);
-
 						if (m_is_pc_relative_op(inst->op) || (inst->args[i].type == ARG_IND) || (strcmp(inst->op->name, "ld") == 0))
 							inst->args[i].u_.value = label->offset - inst->offset;
 						else
-						{
 							inst->args[i].u_.value = label->offset;
-						}
-
 						log_msg(LOG_D, " to value %d at line %d\n",
 								inst->args[i].u_.value, inst->line_no);
 						found = true;
@@ -179,14 +87,14 @@ static void m_normalize_args(t_instr* inst_list, t_label* label_list)
 				}
 				if (!found)
 				{
-					log_msg(LOG_E,
-							"Error: Undefined label '%s' at line %d\n",
+					log_msg(LOG_E, "Error: Undefined label '%s' at line %d\n",
 							inst->args[i].u_.label, inst->line_no);
 
 					/* label not found. wrong code. */
 					ft_assert(false, "Undefined label");
 				}
 			}
+			i++;
 		}
 		inst = FT_LIST_GET_NEXT(&inst_list, inst);
 	}

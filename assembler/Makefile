@@ -12,7 +12,7 @@ RELEASE_CFLAGS = -Werror -Wextra -Wall -g -O3
 
 #########
 FILES = main ft_list ft_malloc parse log op encode parse_utils parse_utils2 parse_arg \
-		 offsets instr
+		 offsets instr eval_expr
 
 SRC = $(addsuffix .c, $(FILES))
 
