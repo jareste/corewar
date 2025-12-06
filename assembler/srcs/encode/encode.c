@@ -52,7 +52,7 @@ int encode_instruction(t_instr *inst, uint8_t *code)
         if (a->type == ARG_REG)
         {
             size = 1;
-            code[pos++] = (uint8_t)a->u.value;
+            code[pos++] = (uint8_t)a->u_.value;
             continue;
         }
 
@@ -68,7 +68,7 @@ int encode_instruction(t_instr *inst, uint8_t *code)
             size = IND_SIZE; /* 2 */
         }
 
-        val = a->u.value; /* this may come from label offset */
+        val = a->u_.value; /* this may come from label offset */
 
         /* write big-endian integer of 'size' bytes */
         for (b = size - 1; b >= 0; --b)

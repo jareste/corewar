@@ -27,5 +27,6 @@ int main(int argc, char **argv)
 
 
     printf("Successfully assembled %s\n", argv[1]);
+    exit(0);
     return 0;
 }

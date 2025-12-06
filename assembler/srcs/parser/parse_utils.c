@@ -37,15 +37,15 @@ void	m_print_instr_args(t_instr *inst)
 	{
 		type = inst->args[i].type;
 		if (type == ARG_REG)
-			log_msg(LOG_I, "r%d", inst->args[i].u.value);
+			log_msg(LOG_I, "r%d", inst->args[i].u_.value);
 		else if (type == ARG_DIR)
-			log_msg(LOG_I, "%%%d", inst->args[i].u.value);
+			log_msg(LOG_I, "%%%d", inst->args[i].u_.value);
 		else if (type == ARG_IND)
-			log_msg(LOG_I, "%d", inst->args[i].u.value);
+			log_msg(LOG_I, "%d", inst->args[i].u_.value);
 		else if (type == ARG_LABEL_DIR)
-			log_msg(LOG_I, "%%:%s", inst->args[i].u.label);
+			log_msg(LOG_I, "%%:%s", inst->args[i].u_.label);
 		else if (type == ARG_LABEL_IND)
-			log_msg(LOG_I, ":%s", inst->args[i].u.label);
+			log_msg(LOG_I, ":%s", inst->args[i].u_.label);
 		if (i < inst->arg_count - 1)
 			log_msg(LOG_I, ", ");
 		i++;

@@ -25,136 +25,21 @@
 #include "../encode/encode.h"
 #include "parse_internal.h"
 
-static t_instr* m_new_instruction(char* instr_text, int line_no)
+t_label	*find_label(t_label *label_list, const char *name)
 {
-	t_instr* inst;
-	t_op* op;
-	int i;
-	char* end;
-	size_t len;
-	char* arg_str;
-	char* token;
-	char *comment;
-	int mask;
-
-	inst = NEW(t_instr, 1);
-
-	/* find operation */
-	end = instr_text + strcspn(instr_text, " \t\n\r\f\v");
-	len = end - instr_text;
-
-	/**/
-	op = m_find_op(instr_text, len);
-	if (!op)
-	{
-		log_msg(LOG_E,
-				"Error: Unknown operation '%.*s' at line %d\n",
-				(int)len, instr_text, line_no);
-		goto error;
-	}
-
-	log_msg(LOG_I, "Instruction '%s' at line %d\n", op->name, line_no);
-
-	inst->line_no = line_no;
-	inst->op = op;
-	inst->arg_count = 0;
-	memset(inst->args, 0, sizeof(inst->args));
-
-	arg_str = m_skip_spaces(end);
-	comment = strchr(arg_str, COMMENT_CHAR);
-	if (comment)
-		*comment = '\0';
-	token = strtok(arg_str, ",");
-	log_msg(LOG_D, "  Parsing arguments: '%s'\n", arg_str);
-	while (token && inst->arg_count < 3)
-	{
-		token = m_skip_spaces(token);
-
-		if (strchr(token, '+') || strchr(token, '-'))
-		{
-			memset(&inst->args[inst->arg_count], 0, sizeof(t_arg));
-
-			if (token[0] == DIRECT_CHAR)        // '%'
-				inst->args[inst->arg_count].type = ARG_DIR;
-			else
-				inst->args[inst->arg_count].type = ARG_IND;
-
-			inst->args[inst->arg_count].expr = strdup(token);
-			if (!inst->args[inst->arg_count].expr)
-				goto error;
-
-			log_msg(LOG_D, "  Extended arg[%d]: '%s'\n",
-					inst->arg_count, token);
-
-			inst->arg_count++;
-			token = strtok(NULL, ",");
-			continue;
-		}
-
-
-		if (m_parse_arg_token(token, &inst->args[inst->arg_count]) != 0)
-		{
-			log_msg(LOG_E,
-					"Error: Invalid argument '%s' for '%s' at line %d\n",
-					token, op->name, line_no);
-			goto error;
-		}
-
-		log_msg(LOG_D, "  Arg[%d]: '%s'\n",
-				inst->arg_count, token);
-		inst->arg_count++;
-
-		token = strtok(NULL, ",");
-	}
-
-	if (inst->arg_count != op->nb_params)
-	{
-		log_msg(LOG_E,
-				"Error: Expected %d arguments for '%s' at line %d, got %d\n",
-				op->nb_params, op->name, line_no, inst->arg_count);
-		goto error;
-	}
-
-	for (i = 0; i < inst->arg_count; ++i)
-	{
-		mask = m_mask_for_arg_type(inst->args[i].type);
-		if (!(inst->op->param_types[i] & mask))
-		{
-			log_msg(LOG_E,
-					"Error: Wrong type for arg %d of '%s' at line %d\n",
-					i + 1, inst->op->name, line_no);
-			goto error;
-		}
-	}
-
-	return inst;
-
-error:
-	for (int j = 0; j < inst->arg_count; ++j)
-	{
-		if (inst->args[j].type == ARG_LABEL_DIR ||
-			inst->args[j].type == ARG_LABEL_IND)
-			free(inst->args[j].u.label);
-	}
-	free(inst);
-	return NULL;
-}
-
-t_label *find_label(t_label *label_list, const char *name)
-{
-	t_label *lab;
+	t_label	*lab;
 
 	lab = label_list;
 	while (lab)
 	{
 		if (strcmp(lab->name, name) == 0)
-			return lab;
+			return (lab);
 		lab = FT_LIST_GET_NEXT(&label_list, lab);
 	}
-	return NULL;
+	return (NULL);
 }
 
-static int eval_expr(const char *expr, t_instr *inst, t_arg_type type, int32_t *out, t_label *label_list)
+static int	eval_expr(const char *expr, t_instr *inst, t_arg_type type, int32_t *out, t_label *label_list)
 {
 	const char *s = expr;
 	int64_t acc = 0;
@@ -168,14 +53,11 @@ static int eval_expr(const char *expr, t_instr *inst, t_arg_type type, int32_t *
 	t_label *lab;
 
 	(void)inst;
-
 	log_msg(LOG_D, "Evaluating expr '%s'\n", expr);
 	log_msg(LOG_D, "  Initial acc=%lld\n", acc);
 	log_msg(LOG_D, " instruction %s[%d] at offset %d\n", inst->op->name, inst->line_no, inst->offset);
-
 	if (*s == DIRECT_CHAR)
 		s++;
-
 	while (*s)
 	{
 		while (*s && isspace((unsigned char)*s))
@@ -218,13 +100,6 @@ static int eval_expr(const char *expr, t_instr *inst, t_arg_type type, int32_t *
 		}
 		else
 		{
-			// errno = 0;
-			// v = strtoll(s, &endptr, 10);
-			// if (errno != 0 || endptr == s)
-			// {
-			//     log_msg(LOG_E, "Error: Bad number in expr '%s'\n", expr);
-			//     return -1;
-			// }
 			endptr = (char*)s;
 			endptr += m_parse_num32(s, (int32_t *)&v);
 			if (endptr == s || endptr < s)
@@ -249,18 +124,6 @@ static int eval_expr(const char *expr, t_instr *inst, t_arg_type type, int32_t *
 	return 0;
 }
 
-// static inline int arg_size(const t_instr *inst, int i)
-// {
-//     switch (inst->args[i].type) {
-//         case ARG_REG: return 1;
-//         case ARG_DIR:
-//         case ARG_LABEL_DIR: return inst->op->has_idx ? 2 : 4;
-//         case ARG_IND:
-//         case ARG_LABEL_IND: return 2;
-//     }
-//     return 0;
-// }
-
 static void m_normalize_args(t_instr* inst_list, t_label* label_list)
 {
 	t_instr* inst;
@@ -281,7 +144,7 @@ static void m_normalize_args(t_instr* inst_list, t_label* label_list)
 				{
 					ft_assert(false, "Error in extended expression");
 				}
-				inst->args[i].u.value = val;
+				inst->args[i].u_.value = val;
 				free(inst->args[i].expr);
 				inst->args[i].expr = NULL;
 				continue;
@@ -294,21 +157,21 @@ static void m_normalize_args(t_instr* inst_list, t_label* label_list)
 				found = false;
 				while (label)
 				{
-					if (strcmp(label->name, inst->args[i].u.label) == 0)
+					if (strcmp(label->name, inst->args[i].u_.label) == 0)
 					{
 						inst->args[i].type = (inst->args[i].type == ARG_LABEL_DIR) ? ARG_DIR : ARG_IND;
-						log_msg(LOG_D, "Normalized label '%s'", inst->args[i].u.label);
-						free(inst->args[i].u.label);
+						log_msg(LOG_D, "Normalized label '%s'", inst->args[i].u_.label);
+						free(inst->args[i].u_.label);
 
 						if (m_is_pc_relative_op(inst->op) || (inst->args[i].type == ARG_IND) || (strcmp(inst->op->name, "ld") == 0))
-							inst->args[i].u.value = label->offset - inst->offset;
+							inst->args[i].u_.value = label->offset - inst->offset;
 						else
 						{
-							inst->args[i].u.value = label->offset;
+							inst->args[i].u_.value = label->offset;
 						}
 
 						log_msg(LOG_D, " to value %d at line %d\n",
-								inst->args[i].u.value, inst->line_no);
+								inst->args[i].u_.value, inst->line_no);
 						found = true;
 						break;
 					}
@@ -318,8 +181,8 @@ static void m_normalize_args(t_instr* inst_list, t_label* label_list)
 				{
 					log_msg(LOG_E,
 							"Error: Undefined label '%s' at line %d\n",
-							inst->args[i].u.label, inst->line_no);
-					
+							inst->args[i].u_.label, inst->line_no);
+
 					/* label not found. wrong code. */
 					ft_assert(false, "Undefined label");
 				}
@@ -345,13 +208,13 @@ int parse_file(const char* filename, t_header* header)
 	t_label* label_list = NULL;
 	t_instr *instr_list = NULL;
 
+	memset(header, 0, sizeof(*header));
 	file = fopen(filename, "r");
 	if (!file)
 	{
 		log_msg(LOG_E, "Error: Could not open file %s\n", filename);
 		return ERROR;
 	}
-
 	while (!feof(file))
 	{
 		line_no++;
@@ -445,6 +308,12 @@ int parse_file(const char* filename, t_header* header)
 			FT_LIST_ADD_LAST(&instr_list, inst);
 			continue;
 		}
+
+		// if (header->prog_name[0] == '\0' || header->comment[0] == '\0')
+		// {
+		// 	log_msg(LOG_E, "Error: Missing .name or .comment before code at line %u\n", line_no);
+		// 	return ERROR;
+		// }
 
 		/* Are we into a label line, or into instruction? */
 		colon = strchr(line, LABEL_CHAR);

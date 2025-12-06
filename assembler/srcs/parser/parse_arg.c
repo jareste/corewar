@@ -41,7 +41,7 @@ static int	m_parse_tok_reg(const char *s, size_t len, t_arg *out)
 	if (reg < 0 || reg > REG_NUMBER)
 		return (-1);
 	out->type = ARG_REG;
-	out->u.value = reg;
+	out->u_.value = reg;
 	return (0);
 }
 
@@ -57,11 +57,11 @@ static int	m_parse_tok_direct(char *s, size_t len, t_arg *out)
 	{
 		out->type = ARG_LABEL_DIR;
 		end = s + 2 + strcspn(s + 2, " \t\n\r\f\v");
-		out->u.label = strndup(s + 2, end - (s + 2));
-		if (!out->u.label)
+		out->u_.label = strndup(s + 2, end - (s + 2));
+		if (!out->u_.label)
 			return (-1);
 		log_msg(LOG_D, "Direct label parsed: '%s' %zu\n",
-			out->u.label, strlen(out->u.label));
+			out->u_.label, strlen(out->u_.label));
 		return (0);
 	}
 	else
@@ -69,7 +69,7 @@ static int	m_parse_tok_direct(char *s, size_t len, t_arg *out)
 		if (m_parse_num32(s + 1, &val) == -1)
 			return (-1);
 		out->type = ARG_DIR;
-		out->u.value = val;
+		out->u_.value = val;
 		return (0);
 	}
 }
@@ -85,11 +85,11 @@ static int	m_parse_tok_indirect(char *s, size_t len, t_arg *out)
 	{
 		out->type = ARG_LABEL_IND;
 		end = s + 1 + strcspn(s + 1, " \t\n\r\f\v");
-		out->u.label = strndup(s + 1, end - (s + 1));
-		if (!out->u.label)
+		out->u_.label = strndup(s + 1, end - (s + 1));
+		if (!out->u_.label)
 			return (-1);
 		log_msg(LOG_D, "Indirect label parsed: '%s' %zu\n",
-			out->u.label, strlen(out->u.label));
+			out->u_.label, strlen(out->u_.label));
 		return (0);
 	}
 	else
@@ -97,7 +97,7 @@ static int	m_parse_tok_indirect(char *s, size_t len, t_arg *out)
 		if (m_parse_num32(s, &val) == -1)
 			return (-1);
 		out->type = ARG_IND;
-		out->u.value = val;
+		out->u_.value = val;
 		return (0);
 	}
 }
