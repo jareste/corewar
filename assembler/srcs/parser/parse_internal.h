@@ -39,10 +39,13 @@ void	m_compute_all_labels(t_label *label_list, t_instr *il, int off);
 int		m_compute_offsets(t_instr *inst_list, t_label *label_list);
 
 /* instr.c */
-t_instr *m_new_instruction(char *instr_text, int line_no);
+t_instr	*m_new_instruction(char *instr_text, int line_no);
 
 /* eval_expr.c */
-int     eval_expr(t_instr *inst, int arg_num, int32_t *out, t_label *ll);
+int		eval_expr(t_instr *inst, int arg_num, int32_t *out, t_label *ll);
+
+/* normalize_args.c */
+void	normalize_args(t_instr *inst_list, t_label *label_list);
 
 /* TBD.c */
 t_label	*find_label(t_label *label_list, const char *name);

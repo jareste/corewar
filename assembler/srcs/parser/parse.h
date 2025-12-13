@@ -13,6 +13,6 @@
 #ifndef PARSE_H
 # define PARSE_H
 
-int	parse_file(const char *filename, t_header *header);
+int parse_file(const char* filename, t_header* header, t_parser_state* parser_state);
 
 #endif /* PARSE_H */

@@ -59,4 +59,10 @@ typedef struct s_label
 	int			line_no;
 }	t_label;
 
+typedef struct s_parser_state
+{
+	t_label		*label_list;
+	t_instr		*instr_list;
+}	t_parser_state;
+
 #endif

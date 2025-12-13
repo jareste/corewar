@@ -39,68 +39,7 @@ t_label	*find_label(t_label *label_list, const char *name)
 	return (NULL);
 }
 
-static void	m_normalize_args(t_instr *inst_list, t_label *label_list)
-{
-	t_instr	*inst;
-	t_label	*label;
-	int		i;
-	bool	found;
-	int32_t	val;
-
-	inst = inst_list;
-	while (inst)
-	{
-		i = 0;
-		while (i < inst->arg_count)
-		{
-			if (inst->args[i].expr)
-			{
-				if (eval_expr(inst, i, &val, label_list) != 0)
-					ft_assert(false, "Error in extended expression");
-				log_msg(LOG_D, "  Final acc=%lld\n", (long long)val);
-				inst->args[i].u_.value = val;
-				free(inst->args[i].expr);
-				inst->args[i].expr = NULL;
-			}
-			else if (inst->args[i].type == ARG_LABEL_DIR ||
-				inst->args[i].type == ARG_LABEL_IND)
-			{
-				label = label_list;
-				found = false;
-				while (label)
-				{
-					if (strcmp(label->name, inst->args[i].u_.label) == 0)
-					{
-						inst->args[i].type = (inst->args[i].type == ARG_LABEL_DIR) ? ARG_DIR : ARG_IND;
-						log_msg(LOG_D, "Normalized label '%s'", inst->args[i].u_.label);
-						free(inst->args[i].u_.label);
-						if (m_is_pc_relative_op(inst->op) || (inst->args[i].type == ARG_IND) || (strcmp(inst->op->name, "ld") == 0))
-							inst->args[i].u_.value = label->offset - inst->offset;
-						else
-							inst->args[i].u_.value = label->offset;
-						log_msg(LOG_D, " to value %d at line %d\n",
-								inst->args[i].u_.value, inst->line_no);
-						found = true;
-						break;
-					}
-					label = FT_LIST_GET_NEXT(&label_list, label);
-				}
-				if (!found)
-				{
-					log_msg(LOG_E, "Error: Undefined label '%s' at line %d\n",
-							inst->args[i].u_.label, inst->line_no);
-
-					/* label not found. wrong code. */
-					ft_assert(false, "Undefined label");
-				}
-			}
-			i++;
-		}
-		inst = FT_LIST_GET_NEXT(&inst_list, inst);
-	}
-}
-
-int parse_file(const char* filename, t_header* header)
+int parse_file(const char* filename, t_header* header, t_parser_state* parser_state)
 {
 	FILE* file;
 	uint32_t line_no = 0;
@@ -112,17 +51,11 @@ int parse_file(const char* filename, t_header* header)
 	char* instr_part;
 	t_label* def_label;
 	t_instr *inst;
-
 	t_label* label_list = NULL;
 	t_instr *instr_list = NULL;
 
-	memset(header, 0, sizeof(*header));
 	file = fopen(filename, "r");
-	if (!file)
-	{
-		log_msg(LOG_E, "Error: Could not open file %s\n", filename);
-		return ERROR;
-	}
+	ft_assert(file, "Failed to open file");
 	while (!feof(file))
 	{
 		line_no++;
@@ -294,10 +227,15 @@ int parse_file(const char* filename, t_header* header)
 	fclose(file);
 	int prog_size = 0;
 	prog_size = m_compute_offsets(instr_list, label_list);
-	m_normalize_args(instr_list, label_list);
+	normalize_args(instr_list, label_list);
 	log_msg(LOG_I, "Finished parsing file %s\n", filename);
 	log_msg(LOG_I, "#########################################################\n");
 	m_print_instrs(instr_list, label_list);
+
+	parser_state->label_list = label_list;
+	parser_state->instr_list =  instr_list;
+	// return 0;
+
 
 	t_instr* l_inst = instr_list;
 	uint8_t code[65536]; /* max size */
