@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_malloc.h>
+#include "ft_malloc.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -45,3 +45,13 @@ char *ft_strdup(const char *s)
     new_s[len] = '\0';
     return new_s;
 }
+
+char    *ft_strndup(const char *s, size_t n)
+{
+    size_t len = strnlen(s, n);
+    char *new_s = ft_malloc(len + 1);
+    strncpy(new_s, s, len);
+    new_s[len] = '\0';
+    return new_s;
+}
+

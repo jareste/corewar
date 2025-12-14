@@ -1,31 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_print_string.c                                  :+:      :+:    :+:   */
+/*   ft_strncmp.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jareste- <jareste-@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/09 10:22:49 by jareste-          #+#    #+#             */
-/*   Updated: 2023/05/15 15:50:04 by jareste-         ###   ########.fr       */
+/*   Created: 2023/05/02 21:11:13 by jareste-          #+#    #+#             */
+/*   Updated: 2023/05/09 00:13:36 by jareste-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_printf.h"
-#include "../libft/libft.h"
+#include "libft.h"
 
-int	ft_print_string(int fd, char *str)
+char	*ft_strncpy(char *s1, const char *s2, size_t n)
 {
-	int	i;
-
-	i = 0;
-	if (str == NULL)
-		str = "(null)";
-	while (str[i])
-	{
-		if (ft_print_char_fd(fd, str[i], 1) == -1)
-			return (-1);
-		i++;
-	}
-	i = ft_strlen(str);
-	return (i);
+	size_t size;
+	
+	size = ft_strnlen(s2, n);
+	if (size != n)
+		ft_memset(s1 + size, '\0', n - size);
+	return (ft_memcpy(s1, s2, size));
 }

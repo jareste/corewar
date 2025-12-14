@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <stdbool.h>
+#include <libft.h>
 #include "log.h"
 #include "../encode/encode.h"
 #include "parse_internal.h"
@@ -31,7 +32,7 @@ static int	m_skip_signs_spaces(const char **s, int *sign)
 	int	my_sign;
 
 	*sign = +1;
-	while (**s && isspace((unsigned char)**s))
+	while (**s && ft_isspace((unsigned char)**s))
 		(*s)++;
 	if (**s == '+' || **s == '-')
 	{
@@ -60,7 +61,7 @@ static int	m_parse_label_term(const char **s, t_label *label_list,
 	log_msg(LOG_D, "  Parsing label term in expr\n");
 	(*s)++;
 	len = 0;
-	while (**s && (strchr(LABEL_CHARS, **s) != NULL)
+	while (**s && (ft_strchr(LABEL_CHARS, **s) != NULL)
 		&& (len < ((int) sizeof(name) - 1)))
 	{
 		name[len] = **s;
@@ -100,7 +101,7 @@ static int	m_eval_expr_adjust_acc(t_instr *instr, int arg_num,
 {
 	if ((m_is_pc_relative_op(instr->op)
 			|| (instr->args[arg_num].type == ARG_IND))
-		&& strchr(instr->args[arg_num].expr, LABEL_CHAR))
+		&& ft_strchr(instr->args[arg_num].expr, LABEL_CHAR))
 	{
 		acc -= instr->offset;
 	}

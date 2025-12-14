@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <stdbool.h>
+#include <libft.h>
 #include "log.h"
 #include "../encode/encode.h"
 #include "parse_internal.h"
@@ -34,7 +35,7 @@ static char	*m_fill_instr(char *s, int line_no, t_instr **out_inst)
 
 	inst = NEW(t_instr, 1);
 	*out_inst = inst;
-	end = s + strcspn(s, " \t\n\r\f\v"); /* TODO add it to libft */
+	end = s + ft_strcspn(s, " \t\n\r\f\v"); /* TODO add it to libft */
 	len = end - s;
 	op = m_find_op(s, len);
 	if (!op)
@@ -47,7 +48,7 @@ static char	*m_fill_instr(char *s, int line_no, t_instr **out_inst)
 	inst->line_no = line_no;
 	inst->op = op;
 	inst->arg_count = 0;
-	memset(inst->args, 0, sizeof(inst->args));
+	ft_memset(inst->args, 0, sizeof(inst->args));
 	return (end);
 }
 
@@ -78,9 +79,9 @@ int	m_parse_tokens(char *arg_str, t_instr *inst)
 	while (token && inst->arg_count < 3)
 	{
 		token = m_skip_spaces(token);
-		if (strchr(token, '+') || strchr(token, '-'))
+		if (ft_strchr(token, '+') || ft_strchr(token, '-'))
 		{
-			memset(&inst->args[inst->arg_count], 0, sizeof(t_arg));
+			ft_memset(&inst->args[inst->arg_count], 0, sizeof(t_arg));
 			if (token[0] == DIRECT_CHAR)
 				inst->args[inst->arg_count].type = ARG_DIR;
 			else
@@ -135,7 +136,7 @@ t_instr	*m_new_instruction(char *instr_text, int line_no)
 	if (!end)
 		return (m_free_inst(inst));
 	arg_str = m_skip_spaces(end);
-	comment = strchr(arg_str, COMMENT_CHAR);
+	comment = ft_strchr(arg_str, COMMENT_CHAR);
 	if (comment)
 		*comment = '\0';
 	if (m_parse_tokens(arg_str, inst) != 1)

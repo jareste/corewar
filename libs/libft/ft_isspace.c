@@ -1,31 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_print_string.c                                  :+:      :+:    :+:   */
+/*   ft_isprint.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jareste- <jareste-@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/09 10:22:49 by jareste-          #+#    #+#             */
-/*   Updated: 2023/05/15 15:50:04 by jareste-         ###   ########.fr       */
+/*   Created: 2023/05/02 15:26:26 by jareste-          #+#    #+#             */
+/*   Updated: 2023/05/08 23:53:24 by jareste-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_printf.h"
-#include "../libft/libft.h"
-
-int	ft_print_string(int fd, char *str)
+int ft_isspace(int c)
 {
-	int	i;
-
-	i = 0;
-	if (str == NULL)
-		str = "(null)";
-	while (str[i])
-	{
-		if (ft_print_char_fd(fd, str[i], 1) == -1)
-			return (-1);
-		i++;
-	}
-	i = ft_strlen(str);
-	return (i);
+    if (c == ' ' || c == '\n' || c == '\t' ||
+        c == '\v' || c == '\f' || c == '\r')
+        return (1);
+    return (0);
 }

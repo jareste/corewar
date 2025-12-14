@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 #include "ft_printf.h"
-#include <libft.h>
+#include "../libft/libft.h"
 
 static int ft_print_decimal_recursive(int fd, long n)
 {

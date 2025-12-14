@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <limits.h>
+#include <libft.h>
 #include <stdbool.h>
 #include "log.h"
 #include "../encode/encode.h"
@@ -56,12 +57,12 @@ static int	m_parse_tok_direct(char *s, size_t len, t_arg *out)
 	if (s[1] == LABEL_CHAR)
 	{
 		out->type = ARG_LABEL_DIR;
-		end = s + 2 + strcspn(s + 2, " \t\n\r\f\v");
-		out->u_.label = strndup(s + 2, end - (s + 2));
+		end = s + 2 + ft_strcspn(s + 2, " \t\n\r\f\v");
+		out->u_.label = ft_strndup(s + 2, end - (s + 2));
 		if (!out->u_.label)
 			return (-1);
 		log_msg(LOG_D, "Direct label parsed: '%s' %zu\n",
-			out->u_.label, strlen(out->u_.label));
+			out->u_.label, ft_strlen(out->u_.label));
 		return (0);
 	}
 	else
@@ -84,12 +85,12 @@ static int	m_parse_tok_indirect(char *s, size_t len, t_arg *out)
 	if (s[0] == LABEL_CHAR)
 	{
 		out->type = ARG_LABEL_IND;
-		end = s + 1 + strcspn(s + 1, " \t\n\r\f\v");
-		out->u_.label = strndup(s + 1, end - (s + 1));
+		end = s + 1 + ft_strcspn(s + 1, " \t\n\r\f\v");
+		out->u_.label = ft_strndup(s + 1, end - (s + 1));
 		if (!out->u_.label)
 			return (-1);
 		log_msg(LOG_D, "Indirect label parsed: '%s' %zu\n",
-			out->u_.label, strlen(out->u_.label));
+			out->u_.label, ft_strlen(out->u_.label));
 		return (0);
 	}
 	else
@@ -108,7 +109,7 @@ int	m_parse_arg_token(const char *arg_str, t_arg *out)
 	size_t	len;
 
 	s = m_skip_spaces((char *)arg_str);
-	len = strlen(s);
+	len = ft_strlen(s);
 	if (len == 0)
 		return (-1);
 	if (s[0] == 'r')

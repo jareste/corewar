@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <stdbool.h>
+#include <libft.h>
 #include "parse_internal.h"
 #include "log.h"
 #include "../encode/encode.h"
@@ -99,7 +100,7 @@ int	m_is_pc_relative_op(const t_op *op)
 
 char	*m_skip_spaces(char *s)
 {
-	while (*s && isspace((unsigned char)*s))
+	while (*s && ft_isspace((unsigned char)*s))
 		s++;
 	return (s);
 }

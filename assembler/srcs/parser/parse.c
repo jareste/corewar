@@ -25,6 +25,7 @@
 #include "../encode/encode.h"
 #include "parse_internal.h"
 #include <gnl.h>
+#include <libft.h>
 
 #define FILE_CREATE	0x01
 #define FILE_CLOSE	0x02
@@ -37,7 +38,7 @@ t_label	*find_label(t_label *label_list, const char *name)
 	lab = label_list;
 	while (lab)
 	{
-		if (strcmp(lab->name, name) == 0)
+		if (ft_strcmp(lab->name, name) == 0)
 			return (lab);
 		lab = FT_LIST_GET_NEXT(&label_list, lab);
 	}
@@ -79,7 +80,7 @@ int	m_read_line(char **line, uint32_t *line_no)
 	buffer = get_next_line(m_handle_file(NULL, FILE_GET));
 	if (!buffer)
 		return (1);
-	buffer[strcspn(buffer, "\n")] = '\0';
+	buffer[ft_strcspn(buffer, "\n")] = '\0';
 	*line = m_skip_spaces(buffer);
 	if (**line == '\0' || **line == COMMENT_CHAR)
 		return (m_read_line(line, line_no));

@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
+#include <libft.h>
 #include "../asm.h"
 #include "log.h"
 
@@ -19,7 +20,7 @@ int encode_instruction(t_instr *inst, uint8_t *code)
     if (!inst->op)
     {
         /* .code raw data */
-        memcpy(&code[pos], inst->raw, inst->raw_len);
+        ft_memcpy(&code[pos], inst->raw, inst->raw_len);
         return pos + inst->raw_len;
     }
 
@@ -115,7 +116,7 @@ int write_cor_file(const char *outname, t_header *header, uint8_t *code, int pro
 
     /* program name */
     log_msg(LOG_E, "Writing program name: '%s'\n", header->prog_name);
-    strncpy(name, header->prog_name, PROG_NAME_LENGTH + 1);
+    ft_strncpy(name, header->prog_name, PROG_NAME_LENGTH + 1);
     if (write(fd, name, PROG_NAME_LENGTH) != PROG_NAME_LENGTH)
     {
         close(fd);
@@ -141,7 +142,7 @@ int write_cor_file(const char *outname, t_header *header, uint8_t *code, int pro
     }
 
     /* comment (2048 bytes) */
-    strncpy(comment, header->comment, COMMENT_LENGTH + 1);
+    ft_strncpy(comment, header->comment, COMMENT_LENGTH + 1);
     log_msg(LOG_E, "Writing comment: '%s'\n", comment);
     if (write(fd, comment, COMMENT_LENGTH) != COMMENT_LENGTH)
     {

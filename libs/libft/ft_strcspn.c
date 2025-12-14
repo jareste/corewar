@@ -1,31 +1,32 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_print_string.c                                  :+:      :+:    :+:   */
+/*   ft_strchr.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jareste- <jareste-@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/09 10:22:49 by jareste-          #+#    #+#             */
-/*   Updated: 2023/05/15 15:50:04 by jareste-         ###   ########.fr       */
+/*   Created: 2023/05/02 20:39:20 by jareste-          #+#    #+#             */
+/*   Updated: 2023/05/09 15:53:12 by jareste-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_printf.h"
-#include "../libft/libft.h"
+#include "libft.h"
 
-int	ft_print_string(int fd, char *str)
+size_t ft_strcspn(const char *s, const char *reject)
 {
-	int	i;
+    size_t i = 0;
+    size_t j;
 
-	i = 0;
-	if (str == NULL)
-		str = "(null)";
-	while (str[i])
-	{
-		if (ft_print_char_fd(fd, str[i], 1) == -1)
-			return (-1);
-		i++;
-	}
-	i = ft_strlen(str);
-	return (i);
+    while (s[i])
+    {
+        j = 0;
+        while (reject[j])
+        {
+            if (s[i] == reject[j])
+                return i;
+            j++;
+        }
+        i++;
+    }
+    return i;
 }

@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 #include "ft_printf.h"
-#include <libft.h>
+#include "../libft/libft.h"
 
 int	ft_print_hex(int fd, unsigned long int n, char format, int c_printed)
 {

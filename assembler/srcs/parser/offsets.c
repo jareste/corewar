@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <limits.h>
+#include <libft.h>
 #include <stdbool.h>
 #include "log.h"
 #include "../encode/encode.h"
@@ -113,7 +114,7 @@ void	m_compute_all_labels(t_label *label_list, t_instr *il, int off)
 		inst = il;
 		while (inst)
 		{
-			if (inst->label && strcmp(inst->label, label->name) == 0)
+			if (inst->label && ft_strcmp(inst->label, label->name) == 0)
 			{
 				label->offset = inst->offset;
 				break ;

@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <stdbool.h>
+#include <libft.h>
 #include "log.h"
 #include "../encode/encode.h"
 #include "parse_internal.h"
@@ -48,7 +49,7 @@ static void	m_update_label_arg(t_instr *inst, t_label *label, int i)
 	free(inst->args[i].u_.label);
 	if (m_is_pc_relative_op(inst->op)
 		|| inst->args[i].type == ARG_IND
-		|| strcmp(inst->op->name, "ld") == 0)
+		|| ft_strcmp(inst->op->name, "ld") == 0)
 		inst->args[i].u_.value = label->offset - inst->offset;
 	else
 		inst->args[i].u_.value = label->offset;
@@ -63,7 +64,7 @@ static void	m_resolve_label_arg(t_instr *inst, t_label *label_list, int i)
 	label = label_list;
 	while (label)
 	{
-		if (strcmp(label->name, inst->args[i].u_.label) == 0)
+		if (ft_strcmp(label->name, inst->args[i].u_.label) == 0)
 		{
 			m_update_label_arg(inst, label, i);
 			break ;

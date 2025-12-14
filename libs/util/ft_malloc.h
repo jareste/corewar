@@ -42,4 +42,5 @@
 void* ft_malloc(size_t size);
 void* ft_realloc(void *ptr, size_t size);
 char* ft_strdup(const char *s);
+char    *ft_strndup(const char *s, size_t n);
 #endif /* FT_MALLOC_H */
