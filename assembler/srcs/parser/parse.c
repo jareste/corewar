@@ -24,12 +24,11 @@
 #include "log.h"
 #include "../encode/encode.h"
 #include "parse_internal.h"
+#include <gnl.h>
 
 #define FILE_CREATE	0x01
 #define FILE_CLOSE	0x02
 #define FILE_GET	0x04
-#define CONTINUE	69
-#define BREAK		70
 
 t_label	*find_label(t_label *label_list, const char *name)
 {
@@ -45,58 +44,52 @@ t_label	*find_label(t_label *label_list, const char *name)
 	return (NULL);
 }
 
-FILE	*m_handle_file(const char *filename, char *mode, int options)
+int	m_handle_file(const char *filename, int options)
 {
-	static FILE	*m_file = NULL;
+	static int m_fd = -1;
 
 	if (options & FILE_CLOSE)
 	{
-		if (m_file)
+		if (m_fd != -1)
 		{
-			fclose(m_file);
-			m_file = NULL;
+			close(m_fd);
+			m_fd = -1;
 		}
-		return (NULL);
+		return (-1);
 	}
 	else if (options & FILE_CREATE)
 	{
-		if (m_file)
-			fclose(m_file);
-		m_file = fopen(filename, mode);
-		ft_assert(m_file, "Failed to open file");
-		return (m_file);
+		if (m_fd != -1)
+			close(m_fd);
+		m_fd = open(filename, O_RDONLY);
+		ft_assert(m_fd != -1, "Failed to open file");
+		return (m_fd);
 	}
-	ft_assert(m_file, "File not opened");
-	return (m_file);
+	ft_assert(m_fd != -1, "File not opened");
+	return (m_fd);
 }
 
 /* static buffer just for line to exist. */
 int	m_read_line(char **line, uint32_t *line_no)
 {
-	static char	buffer[256];
+	static char	*buffer = NULL;
 
 	(*line_no)++;
-	if (!fgets(buffer, sizeof(buffer), m_handle_file(NULL, NULL, FILE_GET)))
-	{
-		if (ferror(m_handle_file(NULL, NULL, FILE_GET)))
-		{
-			log_msg(LOG_E, "Error: Could not read from file\n");
-			m_handle_file(NULL, NULL, FILE_CLOSE);
-			return (ERROR);
-		}
-		return (BREAK);
-	}
+	free(buffer);
+	buffer = get_next_line(m_handle_file(NULL, FILE_GET));
+	if (!buffer)
+		return (1);
 	buffer[strcspn(buffer, "\n")] = '\0';
 	*line = m_skip_spaces(buffer);
 	if (**line == '\0' || **line == COMMENT_CHAR)
-		return (CONTINUE);
+		return (m_read_line(line, line_no));
 	return (0);
 }
 
 int	parse_file(const char *filename, t_header *header, t_parser_state *p_st)
 {
 	uint32_t line_no = 0;
-	int res;
+	// int res;
 	char *line;
 	char *colon;
 	char *space;
@@ -106,18 +99,9 @@ int	parse_file(const char *filename, t_header *header, t_parser_state *p_st)
 	t_label *label_list = NULL;
 	t_instr *instr_list = NULL;
 
-	m_handle_file(filename, "r", FILE_CREATE);
-	while (!feof(m_handle_file(NULL, NULL, FILE_GET)))
+	m_handle_file(filename, FILE_CREATE);
+	while (m_read_line(&line, &line_no) == 0)
 	{
-		res = m_read_line(&line, &line_no);
-		if (res == CONTINUE)
-			continue;
-		else if (res == BREAK)
-			break;
-		else if (res != 0)
-			return (res);
-
-
 		log_msg(LOG_D, "Read line[%u] '%s'\n", line_no, line);
 
 		/* We got name or comment? */
@@ -263,7 +247,7 @@ int	parse_file(const char *filename, t_header *header, t_parser_state *p_st)
 		l_label = FT_LIST_GET_NEXT(&label_list, l_label);
 	}
 
-	m_handle_file(NULL, NULL, FILE_CLOSE);
+	m_handle_file(NULL, FILE_CLOSE);
 	int prog_size = 0;
 	prog_size = m_compute_offsets(instr_list, label_list);
 	normalize_args(instr_list, label_list);

@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "gnl.h"
 
 char	*no_s1(char **s1)
 {
@@ -32,8 +32,8 @@ char	*gnl_ft_strjoin(char *s1, char *s2)
 	if (!s1)
 		if (!no_s1(&s1))
 			return (NULL);
-	len1 = ft_strlen(s1);
-	len2 = ft_strlen(s2);
+	len1 = gnl_ft_strlen(s1);
+	len2 = gnl_ft_strlen(s2);
 	join = malloc(sizeof(char) * (len1 + len2 + 1));
 	if (!join)
 		return (ft_free(&s1));
@@ -54,7 +54,7 @@ char	*gnl_ft_substr(char *s, unsigned int start, size_t len)
 
 	if (s == NULL)
 		return (0);
-	if (start > ft_strlen(s))
+	if (start > gnl_ft_strlen(s))
 	{
 		substr = malloc(sizeof(char) * 1);
 		if (!substr)
@@ -62,13 +62,13 @@ char	*gnl_ft_substr(char *s, unsigned int start, size_t len)
 		substr[0] = '\0';
 		return (substr);
 	}
-	if (len > ft_strlen(s) - start)
-		len = ft_strlen(s) - start;
+	if (len > gnl_ft_strlen(s) - start)
+		len = gnl_ft_strlen(s) - start;
 	substr = (char *)malloc((len + 1) * sizeof(char));
 	if (!substr)
 		return (0);
 	i = 0;
-	while (start < ft_strlen(s) && i < len && &s[start])
+	while (start < gnl_ft_strlen(s) && i < len)
 		substr[i++] = s[start++];
 	substr[i] = '\0';
 	return (substr);

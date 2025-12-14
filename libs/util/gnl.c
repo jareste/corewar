@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line_bonus.h"
+#include "gnl.h"
 
 char	*ft_free(char **buffer)
 {
@@ -25,9 +25,9 @@ char	*new_line(char *buffer)
 	char	*newline;
 	char	*aux;
 
-	aux = ft_strchr(buffer, '\n');
+	aux = gnl_ft_strchr(buffer, '\n');
 	len = (aux - buffer) + 1;
-	newline = ft_substr(buffer, 0, len);
+	newline = gnl_ft_substr(buffer, 0, len);
 	if (!newline)
 		return (NULL);
 	return (newline);
@@ -43,13 +43,13 @@ char	*ft_find_line(int fd, char *buffer)
 	if (!temp)
 		return (ft_free(&buffer));
 	temp[0] = '\0';
-	while (aux > 0 && !ft_strchr(temp, '\n'))
+	while (aux > 0 && !gnl_ft_strchr(temp, '\n'))
 	{
 		aux = read(fd, temp, BUFFER_SIZE);
 		if (aux > 0)
 		{
 			temp[aux] = '\0';
-			buffer = ft_strjoin(buffer, temp);
+			buffer = gnl_ft_strjoin(buffer, temp);
 		}
 	}
 	free(temp);
@@ -64,7 +64,7 @@ char	*empty_prev_line(char *buffer)
 	char	*aux;
 	int		len;
 
-	aux = ft_strchr(buffer, '\n');
+	aux = gnl_ft_strchr(buffer, '\n');
 	if (!aux)
 	{
 		n_buffer = NULL;
@@ -74,7 +74,7 @@ char	*empty_prev_line(char *buffer)
 		len = (aux - buffer) + 1;
 	if (!buffer[len])
 		return (ft_free(&buffer));
-	n_buffer = ft_substr(buffer, len, ft_strlen(buffer) - len);
+	n_buffer = gnl_ft_substr(buffer, len, gnl_ft_strlen(buffer) - len);
 	ft_free(&buffer);
 	if (!n_buffer)
 		return (NULL);
@@ -88,7 +88,7 @@ char	*get_next_line(int fd)
 
 	if (fd < 0)
 		return (NULL);
-	if (!buffer[fd] || (buffer[fd] && !ft_strchr(buffer[fd], '\n')))
+	if (!buffer[fd] || (buffer[fd] && !gnl_ft_strchr(buffer[fd], '\n')))
 		buffer[fd] = ft_find_line(fd, buffer[fd]);
 	if (!buffer[fd])
 		return (NULL);

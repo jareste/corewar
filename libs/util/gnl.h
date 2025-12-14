@@ -17,6 +17,10 @@
 #  define BUFFER_SIZE 500000000
 # endif
 
+# ifndef OPEN_MAX
+#  define OPEN_MAX 1024
+# endif
+
 # include <limits.h>
 # include <unistd.h>
 # include <stdlib.h>
@@ -28,5 +32,5 @@ char	*gnl_ft_strjoin(char *s1, char *s2);
 char	*gnl_ft_substr(char *s, unsigned int start, size_t len);
 size_t	gnl_ft_strlen(const char *s);
 char	*gnl_ft_strchr(char *s, int c);
-char	*gnl_ft_free(char **buffer);
+char	*ft_free(char **buffer);
 #endif
