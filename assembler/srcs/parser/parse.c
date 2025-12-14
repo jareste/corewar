@@ -25,6 +25,12 @@
 #include "../encode/encode.h"
 #include "parse_internal.h"
 
+#define FILE_CREATE	0x01
+#define FILE_CLOSE	0x02
+#define FILE_GET	0x04
+#define CONTINUE	69
+#define BREAK		70
+
 t_label	*find_label(t_label *label_list, const char *name)
 {
 	t_label	*lab;
@@ -39,62 +45,95 @@ t_label	*find_label(t_label *label_list, const char *name)
 	return (NULL);
 }
 
-int parse_file(const char* filename, t_header* header, t_parser_state* parser_state)
+FILE	*m_handle_file(const char *filename, char *mode, int options)
 {
-	FILE* file;
+	static FILE	*m_file = NULL;
+
+	if (options & FILE_CLOSE)
+	{
+		if (m_file)
+		{
+			fclose(m_file);
+			m_file = NULL;
+		}
+		return (NULL);
+	}
+	else if (options & FILE_CREATE)
+	{
+		if (m_file)
+			fclose(m_file);
+		m_file = fopen(filename, mode);
+		ft_assert(m_file, "Failed to open file");
+		return (m_file);
+	}
+	ft_assert(m_file, "File not opened");
+	return (m_file);
+}
+
+/* static buffer just for line to exist. */
+int	m_read_line(char **line, uint32_t *line_no)
+{
+	static char	buffer[256];
+
+	(*line_no)++;
+	if (!fgets(buffer, sizeof(buffer), m_handle_file(NULL, NULL, FILE_GET)))
+	{
+		if (ferror(m_handle_file(NULL, NULL, FILE_GET)))
+		{
+			log_msg(LOG_E, "Error: Could not read from file\n");
+			m_handle_file(NULL, NULL, FILE_CLOSE);
+			return (ERROR);
+		}
+		return (BREAK);
+	}
+	buffer[strcspn(buffer, "\n")] = '\0';
+	*line = m_skip_spaces(buffer);
+	if (**line == '\0' || **line == COMMENT_CHAR)
+		return (CONTINUE);
+	return (0);
+}
+
+int	parse_file(const char *filename, t_header *header, t_parser_state *p_st)
+{
 	uint32_t line_no = 0;
-	char buffer[256];
-	char* line;
-	char* label_name;
-	char* colon;
-	char* space;
-	char* instr_part;
-	t_label* def_label;
+	int res;
+	char *line;
+	char *colon;
+	char *space;
+	char *instr_part;
+	t_label *def_label;
 	t_instr *inst;
-	t_label* label_list = NULL;
+	t_label *label_list = NULL;
 	t_instr *instr_list = NULL;
 
-	file = fopen(filename, "r");
-	ft_assert(file, "Failed to open file");
-	while (!feof(file))
+	m_handle_file(filename, "r", FILE_CREATE);
+	while (!feof(m_handle_file(NULL, NULL, FILE_GET)))
 	{
-		line_no++;
-		if (fgets(buffer, sizeof(buffer), file) == NULL)
-		{
-			if (ferror(file))
-			{
-				log_msg(LOG_E, "Error: Could not read from file %s\n", filename);
-				fclose(file);
-				return ERROR;
-			}
-			break;
-		}
-
-		/* remove '\n' at the end of the line */
-		buffer[strcspn(buffer, "\n")] = '\0';
-
-		line = m_skip_spaces(buffer);
-		if (*line == '\0' || *line == COMMENT_CHAR)
+		res = m_read_line(&line, &line_no);
+		if (res == CONTINUE)
 			continue;
+		else if (res == BREAK)
+			break;
+		else if (res != 0)
+			return (res);
 
 
-		log_msg(LOG_D, "Read line[%u] '%s'\n", line_no, buffer);
-		log_msg(LOG_D, "%d, %d\n", strncmp(buffer, ".code", 5), isspace((unsigned char)buffer[5]));
+		log_msg(LOG_D, "Read line[%u] '%s'\n", line_no, line);
 
 		/* We got name or comment? */
-		if (strstr(buffer, NAME_CMD_STRING))
+		if (strstr(line, NAME_CMD_STRING))
 		{
-			sscanf(buffer, NAME_CMD_STRING" \"%[^\"]\"", header->prog_name);
+			sscanf(line, NAME_CMD_STRING" \"%[^\"]\"", header->prog_name);
 			log_msg(LOG_I, "Program Name: '%s'\n", header->prog_name);
 			continue;
 		}
-		else if (strstr(buffer, COMMENT_CMD_STRING))
+		else if (strstr(line, COMMENT_CMD_STRING))
 		{
-			sscanf(buffer, COMMENT_CMD_STRING" \"%[^\"]\"", header->comment);
+			sscanf(line, COMMENT_CMD_STRING" \"%[^\"]\"", header->comment);
 			log_msg(LOG_I, "Program Comment: '%s'\n", header->comment);
 			continue;
 		}
-		else if (strstr(buffer, ".extend"))
+		else if (strstr(line, ".extend"))
 		{
 			// m_extend_enabled = true;
 			log_msg(LOG_I, "Extend directive found, extended features enabled.\n");
@@ -167,12 +206,12 @@ int parse_file(const char* filename, t_header* header, t_parser_state* parser_st
 		{
 			/* contains label. */
 			*colon = '\0';
-			label_name = line;
+			// label_name = line;
 
-			def_label = m_new_label(label_name);
+			def_label = m_new_label(line);
 			if (!def_label)
 			{
-				log_msg(LOG_E, "Error: Invalid label name '%s' at line %u\n", label_name, line_no);
+				log_msg(LOG_E, "Error: Invalid label name '%s' at line %u\n", line, line_no);
 				/* handle error */
 				return ERROR;
 			}
@@ -224,7 +263,7 @@ int parse_file(const char* filename, t_header* header, t_parser_state* parser_st
 		l_label = FT_LIST_GET_NEXT(&label_list, l_label);
 	}
 
-	fclose(file);
+	m_handle_file(NULL, NULL, FILE_CLOSE);
 	int prog_size = 0;
 	prog_size = m_compute_offsets(instr_list, label_list);
 	normalize_args(instr_list, label_list);
@@ -232,8 +271,8 @@ int parse_file(const char* filename, t_header* header, t_parser_state* parser_st
 	log_msg(LOG_I, "#########################################################\n");
 	m_print_instrs(instr_list, label_list);
 
-	parser_state->label_list = label_list;
-	parser_state->instr_list =  instr_list;
+	p_st->label_list = label_list;
+	p_st->instr_list =  instr_list;
 	// return 0;
 
 
