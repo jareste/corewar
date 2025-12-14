@@ -19,6 +19,8 @@ SRC_PATH = .
 SRCS = log.c \
 	ft_list.c \
 	ft_malloc.c \
+	gnl.c \
+	gnl_utils.c
 
 
 OBJS := $(SRCS:.c=.o)
