@@ -19,4 +19,6 @@ int	encode_instruction(t_instr *inst, uint8_t *code);
 int	write_cor_file(const char *outname, t_header *header,\
 		uint8_t *code, int prog_size);
 
+int encode_instruction_list(t_instr *inst_list, uint8_t **code);
+
 #endif /* ENCODE_H */

@@ -172,3 +172,16 @@ int write_cor_file(const char *outname, t_header *header, uint8_t *code, int pro
     return 0;
 }
 
+int encode_instruction_list(t_instr *inst_list, uint8_t **code)
+{
+    t_instr *inst;
+
+    *code = malloc(65536*sizeof(uint8_t)); /* max size */
+    inst = inst_list;
+    while (inst)
+    {
+        encode_instruction(inst, *code);
+        inst = FT_LIST_GET_NEXT(&inst_list, inst);
+    }
+    return 0;
+}

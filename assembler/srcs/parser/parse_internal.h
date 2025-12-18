@@ -50,4 +50,11 @@ void	normalize_args(t_instr *inst_list, t_label *label_list);
 /* TBD.c */
 t_label	*find_label(t_label *label_list, const char *name);
 
+/* parse_specials.c */
+int		check_special_line(char *line, int line_no, t_header *header,\
+	t_parser_state *p_st);
+
+/* handle_label.c */
+int		handle_label_colon(char *line, uint32_t line_no, t_parser_state *p_st);
+
 #endif /* PARSE_INTERNAL_H */

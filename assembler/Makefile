@@ -18,8 +18,8 @@ UTIL_A = ../libs/util/libutil.a
 LIBS_A = $(LIBFT_A) $(PRINTF_A) $(UTIL_A)
 
 #########
-FILES = main parse op encode parse_utils parse_utils2 parse_arg \
-		 offsets instr eval_expr normalize_args
+FILES = main parse op encode parse_utils parse_utils2 parse_arg parse_specials \
+		handle_label offsets instr eval_expr normalize_args
 
 SRC = $(addsuffix .c, $(FILES))
 

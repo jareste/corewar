@@ -61,8 +61,9 @@ typedef struct s_label
 
 typedef struct s_parser_state
 {
-	t_label		*label_list;
-	t_instr		*instr_list;
+	t_label		*l_l;
+	t_instr		*i_l;
+	int			prog_size;
 }	t_parser_state;
 
 #endif
