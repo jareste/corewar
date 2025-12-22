@@ -3,12 +3,19 @@ NAME = corewar
 #########
 RM = rm -rf
 CC = cc
-CFLAGS = -Werror -Wextra -Wall -g -fsanitize=address -O3 -Iinc -lpthread #-DDEBUG
+LIB_PATHS = -L../libs/libft -L../libs/printf -L../libs/util
+LIB_INCLUDES = -I../libs/libft -I../libs/printf -I../libs/util -Iinc
+CFLAGS = -Werror -Wextra -Wall -g -fsanitize=address -O3 $(LIB_INCLUDES) $(LIB_PATHS)
 # CFLAGS = -Werror -Wextra -Wall -g -fsanitize=address -O3 -I$(OPENSSL_BUILD_DIR)/include -I$(THIRD_PARTY_PATH)/cJSON -Iinc -DUSE_SSL #-DDEBUG
 # CFLAGS = -Werror -Wextra -Wall -g -fsanitize=thread -O3 -I$(OPENSSL_BUILD_DIR)/include -I$(THIRD_PARTY_PATH)/cJSON -Iinc -DUSE_SSL #-DDEBUG
-LDFLAGS = -L$(OPENSSL_BUILD_DIR)/lib -lssl -lcrypto -lm
+LDFLAGS = -lm -lutil -lft -lftprintf
 RELEASE_CFLAGS = -Werror -Wextra -Wall -g -O3
 #########
+
+LIBFT_A = ../libs/libft/libft.a
+PRINTF_A = ../libs/printf/libftprintf.a
+UTIL_A = ../libs/util/libutil.a
+LIBS_A = $(LIBFT_A) $(PRINTF_A) $(UTIL_A)
 
 #########
 FILES = main ft_list ft_malloc log op decode process operations
@@ -38,17 +45,27 @@ all: .gitignore
 	
 	$(MAKE) $(NAME)
 
-$(NAME): $(OBJ) Makefile
+debug: CFLAGS = -Werror -Wextra -Wall -g -fsanitize=address -O3 -Iinc -DDEBUG #-lpthread -DDEBUG
+debug: all
+	@echo "DEBUG BUILD DONE  "
+
+dre: CFLAGS = -Werror -Wextra -Wall -g -fsanitize=address -O3 -Iinc -DDEBUG #-lpthread -DDEBUG
+dre: re
+	@echo "DEBUG REBUILD DONE  "
+
+$(LIBFT_A):
+	$(MAKE) -C ../libs/libft
+
+$(PRINTF_A):
+	$(MAKE) -C ../libs/printf
+
+$(UTIL_A):
+	$(MAKE) -C ../libs/util
+
+$(NAME): $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) -ldl -lpthread -o $(NAME) $(LDFLAGS)
 	@echo "EVERYTHING DONE  "
 #	@./.add_path.sh
-
-$(CJSON_OBJ): $(CJSON_SRC)
-	@mkdir -p $(OBJ_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(CJSON_LIB): $(CJSON_OBJ)
-	ar rcs $@ $<
 
 release: CFLAGS = $(RELEASE_CFLAGS)
 release: re
@@ -57,12 +74,16 @@ release: re
 clean:
 	$(RM) $(OBJ) $(DEP)
 	$(RM) -r $(OBJ_DIR)
+	$(MAKE) -C ../libs/libft clean
+	$(MAKE) -C ../libs/printf clean
+	$(MAKE) -C ../libs/util clean
 	@echo "OBJECTS REMOVED   "
 
 fclean: clean
 	$(RM) $(NAME)
-	cd $(OPENSSL_SRC_DIR) && [ -f Makefile ] && make clean || true
-	rm -rf $(OPENSSL_INSTALL_DIR)
+	$(MAKE) -C ../libs/libft fclean
+	$(MAKE) -C ../libs/printf fclean
+	$(MAKE) -C ../libs/util fclean
 	@echo "EVERYTHING REMOVED   "
 
 re: fclean
@@ -84,7 +105,7 @@ re: fclean
 		echo ".gitignore already exists."; \
 	fi
 
-.PHONY: all clean fclean re release .gitignore
+.PHONY: all clean fclean re release .gitignore debug dre
 
 
 -include $(DEP)

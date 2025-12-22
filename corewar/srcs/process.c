@@ -329,9 +329,7 @@ t_champ *get_winner(t_vm *vm)
 {
 	t_champ *champ;
 
-	if (vm->last_alive_player <= 0)
-		return NULL; /* not possible */
-
+	ft_assert(vm->last_alive_player > -1, "Invalid last_alive_player");
 	champ = find_champ_by_id(vm, vm->last_alive_player);
 	return champ;
 }

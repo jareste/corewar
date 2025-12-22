@@ -67,13 +67,6 @@ $(NAME): $(OBJ)
 	@echo "EVERYTHING DONE  "
 #	@./.add_path.sh
 
-$(CJSON_OBJ): $(CJSON_SRC)
-	@mkdir -p $(OBJ_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(CJSON_LIB): $(CJSON_OBJ)
-	ar rcs $@ $<
-
 release: CFLAGS = $(RELEASE_CFLAGS)
 release: re
 	@echo "RELEASE BUILD DONE  "
@@ -112,7 +105,8 @@ re: fclean
 		echo ".gitignore already exists."; \
 	fi
 
-.PHONY: all clean fclean re release .gitignore
+.PHONY: all clean fclean re release .gitignore debug dre
 
 
 -include $(DEP)
+ñ
