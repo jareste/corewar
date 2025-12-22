@@ -35,7 +35,7 @@ static char	*m_fill_instr(char *s, int line_no, t_instr **out_inst)
 
 	inst = NEW(t_instr, 1);
 	*out_inst = inst;
-	end = s + ft_strcspn(s, " \t\n\r\f\v"); /* TODO add it to libft */
+	end = s + ft_strcspn(s, " \t\n\r\f\v");
 	len = end - s;
 	op = m_find_op(s, len);
 	if (!op)
@@ -74,7 +74,7 @@ int	m_parse_tokens(char *arg_str, t_instr *inst)
 {
 	char	*token;
 
-	token = strtok(arg_str, ","); /* TODO add it to libft */
+	token = ft_strtok(arg_str, ",");
 	log_msg(LOG_D, "  Parsing arguments: '%s'\n", arg_str);
 	while (token && inst->arg_count < 3)
 	{
@@ -94,7 +94,7 @@ int	m_parse_tokens(char *arg_str, t_instr *inst)
 			return (-1);
 		log_msg(LOG_D, "  Arg[%d]: '%s'\n", inst->arg_count, token);
 		inst->arg_count++;
-		token = strtok(NULL, ",");
+		token = ft_strtok(NULL, ",");
 	}
 	return (1);
 }

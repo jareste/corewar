@@ -23,6 +23,8 @@
 #define SSIZE_MIN (-(SSIZE_MAX + 1))
 #endif
 
+typedef unsigned long ulong;
+typedef long long llong;
 
 int		ft_atoi(const char *str);
 ssize_t	ft_atossize(const char *str);
@@ -30,6 +32,7 @@ void	ft_bzero(void *s, size_t n);
 int		ft_isalnum(int c);
 int		ft_isalpha(int c);
 int		ft_isascii(int c);
+int     ft_isxdigit(int c);
 int		ft_isdigit(int c);
 int		ft_isprint(int c);
 int		ft_isspace(int c);
@@ -63,5 +66,13 @@ void	ft_putendl_fd(char *s, int fd);
 void	ft_putnbr_fd(int n, int fd);
 size_t	ft_strcspn(const char *s, const char *reject);
 int		ft_strcmp(const char *s1, const char *s2);
+char    *ft_strtok(char *restrict str, const char *restrict delim);
+size_t	ft_strspn(const char *s, const char *accept);
+ulong   ft_strtoul(const char *restrict nptr, char **restrict endptr,
+				int base);
+long	ft_strtol(const char *restrict nptr, char **restrict endptr,
+				int base);
+llong	ft_strtoll(const char *restrict nptr, char **restrict endptr,
+				int base);
 
 #endif

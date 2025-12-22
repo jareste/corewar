@@ -1,24 +1,35 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_atoi.c                                          :+:      :+:    :+:   */
+/*   ft_strchr.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jareste- <jareste-@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/03 12:24:26 by jareste-          #+#    #+#             */
-/*   Updated: 2023/05/08 23:47:53 by jareste-         ###   ########.fr       */
+/*   Created: 2023/05/02 20:39:20 by jareste-          #+#    #+#             */
+/*   Updated: 2023/05/09 15:53:12 by jareste-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef ENCODE_H
-# define ENCODE_H
+#include "libft.h"
 
-# include <stdint.h>
+size_t	ft_strspn(const char *s, const char *accept)
+{
+	size_t	i;
+	size_t	j;
 
-int	encode_instruction(t_instr *inst, uint8_t *code);
-int	write_cor_file(const char *outname, t_header *header,\
-		uint8_t *code, int prog_size);
-
-int	encode_instruction_list(t_instr *inst_list, uint8_t **code);
-
-#endif /* ENCODE_H */
+	i = 0;
+	while (s[i])
+	{
+		j = 0;
+		while (accept[j])
+		{
+			if (s[i] == accept[j])
+				break;
+			j++;
+		}
+		if (accept[j] == '\0')
+			return i;
+		i++;
+	}
+	return i;
+}

@@ -69,7 +69,7 @@ int	m_parse_reg(const char *s, int *out)
 	long	val;
 
 	errno = 0;
-	val = strtol(s, &endptr, 10); /* todo implement it */
+	val = ft_strtol(s, &endptr, 10);
 	log_msg(LOG_D, "Parsing int Errno=%d, endptr='%d' val=%d\n",
 		errno, endptr == s, *endptr != '\0');
 	if (errno != 0 || endptr == s || (*endptr != '\0'
@@ -91,12 +91,12 @@ int	m_parse_num32(const char *s, int32_t *out)
 	{
 		s += 2;
 		errno = 0;
-		val = strtoll(s, &endptr, 16);  /* todo implement it */
+		val = ft_strtoll(s, &endptr, 16);
 	}
 	else
 	{
 		errno = 0;
-		val = strtoll(s, &endptr, 10);  /* todo implement it */
+		val = ft_strtoll(s, &endptr, 10);
 	}
 	log_msg(LOG_D, "Parsing int32 Errno=%d, endptr='%d' val=%lld\n",
 		errno, endptr == s, val);

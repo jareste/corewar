@@ -19,7 +19,7 @@ LIBS_A = $(LIBFT_A) $(PRINTF_A) $(UTIL_A)
 
 #########
 FILES = main parse op encode parse_utils parse_utils2 parse_arg parse_specials \
-		handle_label offsets instr eval_expr normalize_args
+		handle_label offsets instr eval_expr normalize_args encode_utils
 
 SRC = $(addsuffix .c, $(FILES))
 

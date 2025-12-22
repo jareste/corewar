@@ -26,10 +26,24 @@
 #include "../encode/encode.h"
 #include "parse_internal.h"
 
-static int	m_fill_header_string(char *src, char *pattern, char *dest, int n)
+static int	m_fill_header_string(char *src, char *dest, size_t max)
 {
-	sscanf(src, pattern, dest);
-	if (n == 1)
+	char	*start;
+	char	*end;
+	size_t	len;
+
+	start = ft_strchr(src, '"');
+	if (!start)
+		return (0);
+	start++;
+	end = ft_strchr(start, '"');
+	if (!end)
+		return (0);
+	len = (size_t)(end - start);
+	if (len > max)
+		len = max;
+	ft_memcpy(dest, start, len);
+	if (max == PROG_NAME_LENGTH)
 		log_msg(LOG_I, "Program Name: '%s'\n", dest);
 	else
 		log_msg(LOG_I, "Program Comment: '%s'\n", dest);
@@ -48,7 +62,7 @@ static uint8_t	m_str_to_hex(char *p, int line_no)
 	byte_str[0] = p[0];
 	byte_str[1] = p[1];
 	byte_str[2] = '\0';
-	return ((uint8_t)strtoul(byte_str, NULL, 16)); /* todo make it with libft */
+	return ((uint8_t)ft_strtoul(byte_str, NULL, 16));
 }
 
 static int	m_handle_dot_code(char *line, int line_no, t_parser_state *p_st)
@@ -62,7 +76,7 @@ static int	m_handle_dot_code(char *line, int line_no, t_parser_state *p_st)
 	n = 0;
 	while (*p)
 	{
-		while (*p && isspace((unsigned char)*p))
+		while (*p && ft_isspace((unsigned char)*p))
 			p++;
 		if (!*p)
 			break ;
@@ -73,7 +87,7 @@ static int	m_handle_dot_code(char *line, int line_no, t_parser_state *p_st)
 	inst->line_no = line_no;
 	inst->op = NULL;
 	inst->raw = malloc(n);
-	memcpy(inst->raw, tmp, n);
+	ft_memcpy(inst->raw, tmp, n);
 	inst->raw_len = n;
 	FT_LIST_ADD_LAST(&p_st->i_l, inst);
 	return (1);
@@ -82,20 +96,20 @@ static int	m_handle_dot_code(char *line, int line_no, t_parser_state *p_st)
 int	check_special_line(char *line, int line_no, t_header *header,\
 	t_parser_state *p_st)
 {
-	if (strstr(line, NAME_CMD_STRING))
+	if (ft_strnstr(line, NAME_CMD_STRING, sizeof(NAME_CMD_STRING) - 1))
 		return (m_fill_header_string(line,
-				NAME_CMD_STRING" \"%[^\"]\"", header->prog_name, 1));
-	else if (strstr(line, COMMENT_CMD_STRING))
+				header->prog_name, PROG_NAME_LENGTH));
+	else if (ft_strnstr(line, COMMENT_CMD_STRING,
+			sizeof(COMMENT_CMD_STRING) - 1))
 		return (m_fill_header_string(line,
-				COMMENT_CMD_STRING" \"%[^\"]\"", header->comment, 2));
-	else if (strstr(line, ".extend"))
+				header->comment, COMMENT_LENGTH));
+	else if (ft_strnstr(line, ".extend", sizeof(".extend") - 1))
 	{
-		// m_extend_enabled = true;
 		log_msg(LOG_I, "Extend directive found, extended features enabled.\n");
 		return (1);
 	}
-	else if (strncmp(line, ".code", 5) == 0
-		&& (line[5] == '\0' || isspace((unsigned char)line[5])))
+	else if (ft_strncmp(line, ".code", 5) == 0
+		&& (line[5] == '\0' || ft_isspace((unsigned char)line[5])))
 		return (m_handle_dot_code(line, line_no, p_st));
 	return (0);
 }
