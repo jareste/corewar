@@ -11,10 +11,10 @@
 /* ************************************************************************** */
 
 #include <string.h>
-#include "corewar.h"
+#include "../corewar.h"
 #include "log.h"
 #include "operations.h"
-#include "process.h"
+#include "../process/process.h"
 #include "libft.h"
 
 static int	m_op_and(t_vm *vm, t_proc *p, t_arg *args);
@@ -31,6 +31,8 @@ static int	m_op_sub(t_vm *vm, t_proc *p, t_arg *args);
 static int	m_op_xor(t_vm *vm, t_proc *p, t_arg *args);
 static int	m_op_or(t_vm *vm, t_proc *p, t_arg *args);
 static int	m_op_aff(t_vm *vm, t_proc *p, t_arg *args);
+static int	m_op_ldi(t_vm *vm, t_proc *p, t_arg *args);
+static int	m_op_lldi(t_vm *vm, t_proc *p, t_arg *args);
 
 static const op_func_t	m_op_funcs[OP_COUNT] =
 {
@@ -44,11 +46,11 @@ static const op_func_t	m_op_funcs[OP_COUNT] =
 	m_op_or,            /* 7: or */
 	m_op_xor,           /* 8: xor */
 	m_op_zjmp,          /* 9: zjmp */
-	NULL,               /* 10: ldi */
+	m_op_ldi,           /* 10: ldi */
 	m_op_sti,           /* 11: sti */
 	m_op_fork,          /* 12: fork */
 	m_op_lld,           /* 13: lld */
-	NULL,               /* 14: lldi */
+	m_op_lldi,          /* 14: lldi */
 	m_op_lfork,         /* 15: lfork */
 	m_op_aff            /* 16: aff */
 };
@@ -302,6 +304,69 @@ static int m_op_and(t_vm *vm, t_proc *p, t_arg *args)
 
 	return 0;
 }
+
+static int	m_op_ldi(t_vm *vm, t_proc *p, t_arg *args)
+{
+	int32_t	a;
+	int32_t	b;
+	int32_t	addr;
+	int32_t	val;
+	int		reg;
+
+	reg = args[2].value;
+	if (reg < 1 || reg > REG_NUMBER)
+	{
+		log_msg(LOG_W, "Invalid register r%d in LDI\n", reg);
+		return 0;
+	}
+
+	a = get_value(vm, p, &args[0]);
+	b = get_value(vm, p, &args[1]);
+
+	addr = p->pc + ((a + b) % IDX_MOD);
+	val = m_mem_read(vm, addr, 4);
+
+	p->regs[reg - 1] = val;
+	p->carry = (val == 0);
+
+	log_msg(LOG_I,
+		"Process %d: ldi (%d + %d) %% IDX_MOD -> [%d] = %d → r%d\n",
+		p->id, a, b, addr, val, reg);
+
+	return 0;
+}
+
+static int	m_op_lldi(t_vm *vm, t_proc *p, t_arg *args)
+{
+    int32_t	a;
+    int32_t	b;
+    int32_t	addr;
+    int32_t	val;
+    int		reg;
+
+    reg = args[2].value;
+    if (reg < 1 || reg > REG_NUMBER)
+    {
+        log_msg(LOG_W, "Invalid register r%d in LLDI\n", reg);
+        return 0;
+    }
+
+    a = get_value(vm, p, &args[0]);
+    b = get_value(vm, p, &args[1]);
+
+    addr = p->pc + (a + b);
+    val = m_mem_read(vm, addr, 4);
+
+    p->regs[reg - 1] = val;
+    p->carry = (val == 0);
+
+    log_msg(LOG_I,
+        "Process %d: lldi (%d + %d) -> [%d] = %d → r%d\n",
+        p->id, a, b, addr, val, reg);
+
+    return 0;
+}
+
 
 static int m_op_st(t_vm *vm, t_proc *p, t_arg *args)
 {

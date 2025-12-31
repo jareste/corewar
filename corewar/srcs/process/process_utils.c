@@ -10,52 +10,52 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef COREWAR_H
-# define COREWAR_H
-# include "../../op/op.h"
-# include <ft_malloc.h>
-# include <ft_list.h>
-# include <error_codes.h>
-# include <stdint.h>
+#include <string.h>
+#include "ft_malloc.h"
+#include "log.h"
+#include "../corewar.h"
+#include "../process/process.h"
+#include "../operations/operations.h"
+#include "process_internal.h"
 
-typedef struct s_champ
+int	exec_fetch_opcode(t_exec_ctx *c)
 {
-	int		id;
-	char	name[PROG_NAME_LENGTH + 1];
-	char	comment[COMMENT_LENGTH + 1];
-	size_t	size;
-	uint8_t	code[CHAMP_MAX_SIZE];
-}	t_champ;
+	c->prev_pc = c->proc->pc;
+	c->opcode = c->vm->memory[c->prev_pc];
+	if (c->opcode < 1 || c->opcode > 16)
+		return (1);
+	c->op = &op_tab[c->opcode];
+	return (0);
+}
 
-typedef struct s_proc
+void	exec_init(t_exec_ctx *c, t_vm *vm, t_proc *proc)
 {
-	list_item_t	l;
-	int			id;
-	int			regs[REG_NUMBER];
-	int			pc;
-	int			carry;
-	int			last_live_cycle;
-	int			op_wait; /* cycles to actually execute this opcode */
-	int			opcode;
-}	t_proc;
+	memset(c, 0, sizeof(*c));
+	c->vm = vm;
+	c->proc = proc;
+	c->adv = 1;
+}
 
-typedef struct s_vm
+int	exec_validate_regs(t_exec_ctx *c)
 {
-	uint8_t	memory[MEM_SIZE];
-	t_proc	*procs;
-	t_champ	champs[MAX_PLAYERS];
-	int		cycle;
-	int		cycle_to_die;
-	int		last_check_cycle;
-	int		lives_in_period;
-	int		last_alive_player;
-	int		aff_enabled;
-}	t_vm;
+	int	i;
 
-typedef struct s_arg
+	i = 0;
+	while (i < c->op->nb_params)
+	{
+		if (c->args[i].type == PARAM_REGISTER)
+		{
+			if (c->args[i].value < 1 || c->args[i].value > REG_NUMBER)
+				return (1);
+		}
+		i++;
+	}
+	return (0);
+}
+
+void	exec_advance_pc(t_exec_ctx *c)
 {
-	int	type;
-	int	value;
-}	t_arg;
-
-#endif /* COREWAR_H */
+	if (c->opcode == OP_ZJMP)
+		return ;
+	c->proc->pc = (c->prev_pc + c->adv) % MEM_SIZE;
+}

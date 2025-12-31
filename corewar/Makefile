@@ -18,11 +18,12 @@ UTIL_A = ../libs/util/libutil.a
 LIBS_A = $(LIBFT_A) $(PRINTF_A) $(UTIL_A)
 
 #########
-FILES = main ft_list ft_malloc log op decode process operations
+FILES = main op decode process operations check_deads exec_read_arg exec_dec_arg_types \
+		process_utils
 
 SRC = $(addsuffix .c, $(FILES))
 
-vpath %.c srcs inc ../op
+vpath %.c srcs inc ../op srcs/decode srcs/process srcs/operations
 #########
 
 OBJ_DIR = objs
@@ -41,8 +42,7 @@ $(OBJ_DIR)/%.o: %.c
 	${CC} -MMD $(CFLAGS) -c $< -o $@
 
 
-all: .gitignore
-	
+all: .gitignore $(LIBS_A)
 	$(MAKE) $(NAME)
 
 debug: CFLAGS = -Werror -Wextra -Wall -g -fsanitize=address -O3 -Iinc -DDEBUG #-lpthread -DDEBUG

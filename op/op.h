@@ -96,6 +96,26 @@ typedef enum {
 	PARAM_DIRECT = 4,
 }								t_param_type;
 
+typedef enum {
+	OP_LIVE = 1,
+	OP_LD,
+	OP_ST,
+	OP_ADD,
+	OP_SUB,
+	OP_AND,
+	OP_OR,
+	OP_XOR,
+	OP_ZJMP,
+	OP_LDI,
+	OP_STI,
+	OP_FORK,
+	OP_LLD,
+	OP_LLDI,
+	OP_LFORK,
+	OP_AFF
+} t_op_code;
+
+
 extern t_op op_tab[17];
 
 #endif

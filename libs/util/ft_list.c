@@ -52,8 +52,9 @@ int ft_list_add_first(void** _head, void* _node)
 
     if (!*head)
     {
-        (*head)->next = node;
-        (*head)->prev = node;
+        *head = node;
+        node->next = node;
+        node->prev = node;
         return (OK);
     }
 

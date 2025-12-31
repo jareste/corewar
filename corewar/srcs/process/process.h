@@ -14,12 +14,15 @@
 # define PROCESS_H
 
 # include <ft_list.h>
-# include "corewar.h"
-# include "decode.h"
+# include "../corewar.h"
+# include "../decode/decode.h"
 
 t_proc	*create_process(int id, int pc, int owner_id);
 int		new_pid(void);
 void	step_proc(t_vm *vm, t_proc *p);
+void	proc_check_deads(t_vm *vm);
+
+/* check_deads.c */
 void	proc_check_deads(t_vm *vm);
 
 #endif /* PROCESS_H */

@@ -1,0 +1,171 @@
+
+// void	execute_instruction(t_vm *vm, t_proc *proc)
+// {
+// 	t_arg		args[3];
+// 	uint8_t		opcode;
+// 	int			size;
+// 	int			i;
+// 	int			total_advance;
+// 	int			pc;
+// 	uint8_t		pcode;
+// 	uint8_t		acb;
+// 	bool		bad_reg;
+// 	t_op		*op;
+// 	int			prev_pc = proc->pc;
+
+// 	opcode = vm->memory[prev_pc];
+// 	if (opcode < 1 || opcode > 16)
+// 		return;
+// 	op = &op_tab[opcode];
+// 	log_msg(LOG_I, "Process %d: Executing opcode %s at pc %d.\n",
+// 			proc->id, op->name, prev_pc);
+// 	memset(args, 0, sizeof(args));
+// 	decode_inst(vm->memory, MEM_SIZE, prev_pc);
+// 	pc = prev_pc + 1; /* after opcode */
+// 	total_advance = 1; /* start with opcode size */
+// 	/* Decode argument types */
+// 	if (op->has_pcode)
+// 	{
+// 		if (pc >= MEM_SIZE)
+// 		{
+// 			log_msg(LOG_W,
+// 					"Process %d: truncated pcode at pc %d\n", proc->id, pc);
+// 			return;
+// 		}
+
+// 		pcode = vm->memory[pc];
+// 		pc++;
+// 		total_advance++;
+
+// 		for (i = 0; i < op->nb_params; ++i)
+// 		{
+// 			acb = (pcode >> (6 - i * 2)) & 0x03;
+// 			switch (acb)
+// 			{
+// 				case REG_CODE: args[i].type = PARAM_REGISTER; break;
+// 				case DIR_CODE: args[i].type = PARAM_DIRECT;   break;
+// 				case IND_CODE: args[i].type = PARAM_INDIRECT; break;
+// 				default:       args[i].type = PARAM_UNKNOWN;  break;
+// 			}
+// 		}
+// 	}
+// 	else
+// 	{
+// 		/* No pcode -> infer from op->param_types (which uses PARAM_* bitmask) */
+// 		for (i = 0; i < op->nb_params; ++i)
+// 		{
+// 			if (op->param_types[i] & PARAM_REGISTER)
+// 				args[i].type = PARAM_REGISTER;
+// 			else if (op->param_types[i] & PARAM_DIRECT)
+// 				args[i].type = PARAM_DIRECT;
+// 			else if (op->param_types[i] & PARAM_INDIRECT)
+// 				args[i].type = PARAM_INDIRECT;
+// 			else
+// 				args[i].type = PARAM_UNKNOWN;
+
+// 			log_msg(LOG_D,
+// 					"Arg %d type set to %d from op param_types\n",
+// 					i + 1, args[i].type);
+// 		}
+// 	}
+
+// 	/* Read argument values */
+// 	for (i = 0; i < op->nb_params; ++i)
+// 	{
+// 		if (args[i].type == PARAM_REGISTER)
+// 		{
+// 			if (pc >= MEM_SIZE)
+// 			{
+// 				log_msg(LOG_W,
+// 						"Process %d: truncated register at pc %d\n",
+// 						proc->id, pc);
+// 				return;
+// 			}
+// 			args[i].value = vm->memory[pc];
+// 			pc++;
+// 			total_advance++;
+
+// 			log_msg(LOG_D, "Register arg read r%d\n", args[i].value);
+// 		}
+// 		else if (args[i].type == PARAM_DIRECT)
+// 		{
+// 			size = op->has_idx ? IND_SIZE : DIR_SIZE; /* DIR: 2 or 4 */
+// 			if (pc + size > MEM_SIZE)
+// 			{
+// 				log_msg(LOG_W,
+// 						"Process %d: truncated direct at pc %d\n",
+// 						proc->id, pc);
+// 				return;
+// 			}
+// 			args[i].value = read_signed(&vm->memory[pc], size);
+// 			pc += size;
+// 			total_advance += size;
+
+// 			log_msg(LOG_D,
+// 					"Direct arg read value %d (size=%d)\n",
+// 					args[i].value, size);
+// 		}
+// 		else if (args[i].type == PARAM_INDIRECT)
+// 		{
+// 			size = IND_SIZE;
+// 			if (pc + size > MEM_SIZE)
+// 			{
+// 				log_msg(LOG_W,
+// 						"Process %d: truncated indirect at pc %d\n",
+// 						proc->id, pc);
+// 				return;
+// 			}
+// 			args[i].value = read_signed(&vm->memory[pc], size);
+// 			pc += size;
+// 			total_advance += size;
+
+// 			log_msg(LOG_D,
+// 					"Indirect arg read value %d\n", args[i].value);
+// 		}
+// 		else
+// 		{
+// 			log_msg(LOG_W,
+// 					"Process %d: unknown arg type for arg %d, treating as invalid\n",
+// 					proc->id, i + 1);
+// 			/* Assert or simply mark it as invalid and advance? */
+// 			ft_assert(false, "Unknown argument type");
+// 		}
+// 	}
+
+// 	/* Validate we readed proper registers */
+// 	bad_reg = false;
+// 	for (i = 0; i < op->nb_params; ++i)
+// 	{
+// 		if (args[i].type == PARAM_REGISTER &&
+// 			(args[i].value < 1 || args[i].value > REG_NUMBER))
+// 		{
+// 			bad_reg = true;
+// 			log_msg(LOG_W,
+// 					"Process %d: invalid register r%d in arg %d\n",
+// 					proc->id, args[i].value, i + 1);
+// 		}
+// 	}
+
+// 	ft_assert(!bad_reg, "Invalid register detected");
+
+// 	/* TODO: actually execute semantics using 'op' & 'args' */
+// 	if (!bad_reg)
+// 	{
+// 		if (op_execute(vm, proc, args, opcode) != 0)
+// 		{
+// 			log_msg(LOG_E,
+// 					"Process %d: Error executing opcode %s\n",
+// 					proc->id, op->name);
+// 		}
+// 	}
+
+// 	/* Advance PC after instruction */
+// 	if (opcode != OP_ZJMP /* ZJMP */) /* zjmp already performs a jump lol */
+// 	{
+// 		proc->pc = (prev_pc + total_advance) % MEM_SIZE;
+// 		log_msg(LOG_D,
+// 			"Process %d: Advanced pc by %d to %d.\n",
+// 			proc->id, total_advance, proc->pc);
+// 	}
+
+// }

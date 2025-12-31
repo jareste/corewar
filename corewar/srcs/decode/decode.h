@@ -1,30 +1,21 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_print_string.c                                  :+:      :+:    :+:   */
+/*   ft_atoi.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jareste- <jareste-@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/09 10:22:49 by jareste-          #+#    #+#             */
-/*   Updated: 2023/05/15 15:50:04 by jareste-         ###   ########.fr       */
+/*   Created: 2023/05/03 12:24:26 by jareste-          #+#    #+#             */
+/*   Updated: 2023/05/08 23:47:53 by jareste-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_printf.h"
-#include "../libft/libft.h"
+#ifndef DECODE_H
+# define DECODE_H
 
-int	ft_print_string(int fd, char *str)
-{
-	int	i;
+# include <stdint.h>
+# include "../corewar.h"
 
-	i = 0;
-	if (str == NULL)
-		str = "(null)";
-	while (str[i])
-	{
-		if (ft_print_char_fd(fd, str[i], 1) == -1)
-			return (-1);
-		i++;
-	}
-	return (i);
-}
+int		decode_file(const char *filename, t_champ *champ);
+
+#endif /* DECODE_H */
