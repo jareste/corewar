@@ -13,7 +13,7 @@
 #ifndef OPERATIONS_H
 # define OPERATIONS_H
 
-typedef int (*op_func_t)(t_vm*, t_proc*, t_arg*);
+typedef int	(*t_op_func)(t_vm*, t_proc*, t_arg*);
 
 t_champ	*find_champ_by_id(t_vm *vm, int id);
 int		op_execute(t_vm *vm, t_proc *proc, t_arg *args, uint8_t op_code);

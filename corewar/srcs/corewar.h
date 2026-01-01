@@ -29,7 +29,7 @@ typedef struct s_champ
 
 typedef struct s_proc
 {
-	list_item_t	l;
+	t_list_item	l;
 	int			id;
 	int			regs[REG_NUMBER];
 	int			pc;

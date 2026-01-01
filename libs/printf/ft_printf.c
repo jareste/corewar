@@ -94,11 +94,11 @@ int	ft_dprintf(int fd, const char *s, ...)
 
 int	ft_vdprintf(int fd, const char *s, va_list args)
 {
-    int	c_printed;
+	int	c_printed;
 
-    c_printed = 0;
-    c_printed = bucle(fd, s, args, c_printed);
-    return (c_printed);
+	c_printed = 0;
+	c_printed = bucle(fd, s, args, c_printed);
+	return (c_printed);
 }
 /*
 #include <stdio.h>

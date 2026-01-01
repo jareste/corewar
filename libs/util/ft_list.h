@@ -15,21 +15,40 @@
 
 typedef struct list_item_s
 {
-    struct list_item_s* next;
-    struct list_item_s* prev;
-} list_item_t;
+	struct list_item_s	*next;
+	struct list_item_s	*prev;
+}	t_list_item;
 
-int ft_list_add_last(void** head, void* node);
-int ft_list_add_first(void** head, void* node);
-void* ft_list_get_next(void** head, void* node);
-void* ft_list_get_prev(void** head, void* node);
-int ft_list_pop(void** head, void* node);
-int ft_list_pop_first(void** head);
-int ft_list_pop_last(void** head);
-int ft_list_get_size(void** head);
-void* ft_list_get_first(void** head);
-void* ft_list_get_last(void** head);
-int ft_list_find_node(void** head, void* node);
+
+#ifdef IAM_GENLIST
+
+int		ft_list_add_last(t_list_item **head, void *node);
+int		ft_list_add_first(t_list_item **head, void *node);
+t_list_item	*ft_list_get_next(t_list_item **head, void *node);
+t_list_item	*ft_list_get_prev(t_list_item **head, void *node);
+int		ft_list_pop(t_list_item **head, void *node);
+int		ft_list_pop_first(t_list_item **head);
+int		ft_list_pop_last(t_list_item **head);
+int		ft_list_get_size(t_list_item **head);
+t_list_item	*ft_list_get_first(t_list_item **head);
+t_list_item	*ft_list_get_last(t_list_item **head);
+int		ft_list_find_node(t_list_item **head, void *node);
+
+#else
+
+int		ft_list_add_last(void **head, void *node);
+int		ft_list_add_first(void **head, void *node);
+void	*ft_list_get_next(void **head, void *node);
+void	*ft_list_get_prev(void **head, void *node);
+int		ft_list_pop(void **head, void *node);
+int		ft_list_pop_first(void **head);
+int		ft_list_pop_last(void **head);
+int		ft_list_get_size(void **head);
+void	*ft_list_get_first(void **head);
+void	*ft_list_get_last(void **head);
+int		ft_list_find_node(void **head, void *node);
+
+#endif /* IAM_GENLIST */
 
 /* Adds node to the last position of the head list. */
 #define FT_LIST_ADD_LAST(head, node) ft_list_add_last((void**)(head), (void*)(node))

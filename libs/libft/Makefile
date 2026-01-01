@@ -51,7 +51,8 @@ SRCS	=	ft_atoi.c \
 			ft_strtoul.c \
 			ft_isxdigit.c \
 			ft_strtol.c \
-			ft_strtoll.c
+			ft_strtoll.c \
+			ft_strtoll_utils.c
 
 
 OBJS	= 	$(SRCS:.c=.o) #$(SRCS_B:.c=.o)

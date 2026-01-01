@@ -13,85 +13,67 @@
 #include "libft.h"
 #include <limits.h>
 
-long long	ft_strtoll(const char *restrict nptr, char **restrict endptr,
-				int base)
+int	digit_value(char c)
+{
+	if (c >= '0' && c <= '9')
+		return (c - '0');
+	if (c >= 'a' && c <= 'z')
+		return (c - 'a' + 10);
+	if (c >= 'A' && c <= 'Z')
+		return (c - 'A' + 10);
+	return (-1);
+}
+
+static const char	*skip_spaces_sign(const char *s, int *neg)
+{
+	while (ft_isspace((unsigned char)*s))
+		s++;
+	*neg = 0;
+	if (*s == '+' || *s == '-')
+	{
+		if (*s == '-')
+			*neg = 1;
+		s++;
+	}
+	return (s);
+}
+
+static int	detect_base(const char *s, int base)
+{
+	if (base != 0)
+		return (base);
+	if (*s == '0')
+	{
+		if ((s[1] == 'x' || s[1] == 'X')
+			&& ft_isxdigit((unsigned char)s[2]))
+			return (16);
+		return (8);
+	}
+	return (10);
+}
+
+long long	ft_strtoll(const char *restrict nptr,
+		char **restrict endptr, int base)
 {
 	const char			*s;
 	unsigned long long	acc;
 	unsigned long long	lim;
-	unsigned long long	cutoff;
-	int					cutlim;
 	int					any;
 	int					neg;
-	int					digit;
 
-	s = nptr;
-	while (ft_isspace((unsigned char)*s))
-		s++;
-	neg = 0;
-	if (*s == '+' || *s == '-')
-	{
-		if (*s == '-')
-			neg = 1;
-		s++;
-	}
-	if (base == 0)
-	{
-		if (*s == '0')
-		{
-			if ((s[1] == 'x' || s[1] == 'X') && ft_isxdigit((unsigned char)s[2]))
-				base = 16;
-			else
-				base = 8;
-		}
-		else
-			base = 10;
-	}
-	if (base == 16 && s[0] == '0' && (s[1] == 'x' || s[1] == 'X'))
-		s += 2;
+	s = skip_spaces_sign(nptr, &neg);
+	base = detect_base(s, base);
+	s = skip_0x(s, base);
 	acc = 0;
-	lim = neg ? (unsigned long long)LLONG_MAX + 1ULL :
-				(unsigned long long)LLONG_MAX;
-	cutoff = lim / (unsigned long long)base;
-	cutlim = (int)(lim % (unsigned long long)base);
-	any = 0;
-	while (*s)
-	{
-		if (*s >= '0' && *s <= '9')
-			digit = *s - '0';
-		else if (*s >= 'a' && *s <= 'z')
-			digit = *s - 'a' + 10;
-		else if (*s >= 'A' && *s <= 'Z')
-			digit = *s - 'A' + 10;
-		else
-			break;
-		if (digit >= base)
-			break;
-		if (any >= 0)
-		{
-			if (acc > cutoff || (acc == cutoff && digit > cutlim))
-			{
-				any = -1;
-				acc = lim;
-			}
-			else
-			{
-				any = 1;
-				acc = acc * (unsigned long long)base +
-						(unsigned long long)digit;
-			}
-		}
-		s++;
-	}
-	if (endptr != NULL)
-	{
-		if (any == 0)
-			*endptr = (char *)nptr;
-		else
-			*endptr = (char *)s;
-	}
+	lim = get_lim(neg);
+	any = parse_digits(&s, &acc, lim, base);
+	set_endptr(endptr, nptr, s, any);
 	if (any == -1)
-		return (neg ? LLONG_MIN : LLONG_MAX);
+	{
+		if (neg)
+			return (LLONG_MIN);
+		return (LLONG_MAX);
+	}
 	if (neg)
 		return (-(long long)acc);
 	return ((long long)acc);

@@ -40,7 +40,7 @@ typedef struct s_arg
 
 typedef struct s_instr
 {
-	list_item_t	l;
+	t_list_item	l;
 	t_op		*op;
 	int			line_no;
 	int			offset; /* offset from start of code */
@@ -53,7 +53,7 @@ typedef struct s_instr
 
 typedef struct s_label
 {
-	list_item_t	l;
+	t_list_item	l;
 	char		*name;
 	int			offset; /* byte offset where label points */
 	int			line_no;

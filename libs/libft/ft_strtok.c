@@ -21,12 +21,12 @@ char	*ft_strtok(char *restrict str, const char *restrict delim)
 	if (str)
 		static_str = str;
 	if (!static_str)
-		return NULL;
+		return (NULL);
 	start = static_str + ft_strspn(static_str, delim);
 	if (*start == '\0')
 	{
 		static_str = NULL;
-		return NULL;
+		return (NULL);
 	}
 	end = start + ft_strcspn(start, delim);
 	if (*end == '\0')
@@ -38,5 +38,5 @@ char	*ft_strtok(char *restrict str, const char *restrict delim)
 		*end = '\0';
 		static_str = end + 1;
 	}
-	return start;
+	return (start);
 }

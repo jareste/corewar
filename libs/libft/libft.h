@@ -75,4 +75,14 @@ long	ft_strtol(const char *restrict nptr, char **restrict endptr,
 llong	ft_strtoll(const char *restrict nptr, char **restrict endptr,
 				int base);
 
+int	parse_digits(const char **ps, unsigned long long *acc,
+		unsigned long long lim, int base);
+unsigned long long	acc_step(unsigned long long acc,
+		unsigned long long base, int digit);
+const char	*skip_0x(const char *s, int base);
+void	set_endptr(char **endptr, const char *nptr,
+		const char *s, int any);
+unsigned long long	get_lim(int neg);
+int	digit_value(char c);
+
 #endif

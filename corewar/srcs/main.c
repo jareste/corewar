@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include "log.h"
 #include "corewar.h"
+#include "ft_printf.h"
 #include "decode/decode.h"
 #include "process/process.h"
 

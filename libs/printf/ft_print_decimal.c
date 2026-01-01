@@ -13,41 +13,41 @@
 #include "ft_printf.h"
 #include "../libft/libft.h"
 
-static int ft_print_decimal_recursive(int fd, long n)
+static int	ft_print_decimal_recursive(int fd, long n)
 {
-    int count = 0;
-    int temp;
-    
-    if (n > 9)
-    {
-        temp = ft_print_decimal_recursive(fd, n / 10);
-        if (temp == -1)
-            return (-1);
-        count += temp;
-    }
-    
-    if (ft_print_char_fd(fd, '0' + (n % 10), 1) == -1)
-        return (-1);
-    
-    return (count + 1);
+	int	count;
+	int	temp;
+
+	count = 0;
+	if (n > 9)
+	{
+		temp = ft_print_decimal_recursive(fd, n / 10);
+		if (temp == -1)
+			return (-1);
+		count += temp;
+	}
+	if (ft_print_char_fd(fd, '0' + (n % 10), 1) == -1)
+		return (-1);
+	return (count + 1);
 }
 
-int ft_print_decimal(int fd, int n)
+int	ft_print_decimal(int fd, int n)
 {
-    int count = 0;
-    long ln = n;
-    
-    if (n < 0)
-    {
-        if (ft_print_char_fd(fd, '-', 1) == -1)
-            return (-1);
-        count++;
-        ln = -ln;
-    }
-    
-    int temp = ft_print_decimal_recursive(fd, ln);
-    if (temp == -1)
-        return (-1);
-    
-    return (count + temp);
+	int		count;
+	int		temp;
+	long	ln;
+
+	ln = (long)n;
+	count = 0;
+	if (n < 0)
+	{
+		if (ft_print_char_fd(fd, '-', 1) == -1)
+			return (-1);
+		count++;
+		ln = -ln;
+	}
+	temp = ft_print_decimal_recursive(fd, ln);
+	if (temp == -1)
+		return (-1);
+	return (count + temp);
 }
