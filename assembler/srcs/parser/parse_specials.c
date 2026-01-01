@@ -89,7 +89,7 @@ static int	m_handle_dot_code(char *line, int line_no, t_parser_state *p_st)
 	inst->raw = malloc(n);
 	ft_memcpy(inst->raw, tmp, n);
 	inst->raw_len = n;
-	FT_LIST_ADD_LAST(&p_st->i_l, inst);
+	ft_list_add_last((void **)&p_st->i_l, (void *)inst);
 	return (1);
 }
 

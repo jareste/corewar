@@ -46,7 +46,7 @@ int	m_find_nearest_offset(t_instr *inst_list, int line_no, int prog_size)
 			nearest_line = inst->line_no;
 			nearest_offset = inst->offset;
 		}
-		inst = FT_LIST_GET_NEXT(&inst_list, inst);
+		inst = ft_list_get_next((void **)&inst_list, (void *)inst);
 	}
 	if (nearest_line == 0)
 		return (prog_size);
@@ -92,7 +92,7 @@ int	m_compute_all_instructions_size(t_instr *inst_list)
 	{
 		inst->offset = offset;
 		offset += m_compute_inst_size(inst);
-		inst = FT_LIST_GET_NEXT(&inst_list, inst);
+		inst = ft_list_get_next((void **)&inst_list, (void *)inst);
 	}
 	return (offset);
 }
@@ -119,9 +119,9 @@ void	m_compute_all_labels(t_label *label_list, t_instr *il, int off)
 				label->offset = inst->offset;
 				break ;
 			}
-			inst = FT_LIST_GET_NEXT(&il, inst);
+			inst = ft_list_get_next((void **)&il, (void *)inst);
 		}
-		label = FT_LIST_GET_NEXT(&label_list, label);
+		label = ft_list_get_next((void **)&label_list, (void *)label);
 	}
 }
 

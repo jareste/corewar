@@ -43,13 +43,13 @@ static int	m_handle_instr_part(char *instr_part, uint32_t line_no,
 		if (def_label)
 		{
 			inst->label = def_label->name;
-			FT_LIST_ADD_LAST(&p_st->l_l, def_label);
+			ft_list_add_last((void **)&p_st->l_l, def_label);
 		}
-		FT_LIST_ADD_LAST(&p_st->i_l, inst);
+		ft_list_add_last((void **)&p_st->i_l, inst);
 	}
 	else if (def_label)
 	{
-		FT_LIST_ADD_LAST(&p_st->l_l, def_label);
+		ft_list_add_last((void **)&p_st->l_l, def_label);
 	}
 	return (0);
 }

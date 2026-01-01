@@ -82,14 +82,14 @@ void	m_print_instrs(t_instr *inst_list, t_label *label_list)
 			m_print_instr_noop(inst);
 		else
 			m_print_instr_args(inst);
-		inst = FT_LIST_GET_NEXT(&inst_list, inst);
+		inst = ft_list_get_next((void **)&inst_list, (void *)inst);
 	}
 	log_msg(LOG_I, "Labels:\n");
 	label = label_list;
 	while (label)
 	{
 		log_msg(LOG_I, "  %s at offset %d\n", label->name, label->offset);
-		label = FT_LIST_GET_NEXT(&label_list, label);
+		label = ft_list_get_next((void **)&label_list, (void *)label);
 	}
 }
 

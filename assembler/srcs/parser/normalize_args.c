@@ -69,7 +69,7 @@ static void	m_resolve_label_arg(t_instr *inst, t_label *label_list, int i)
 			m_update_label_arg(inst, label, i);
 			break ;
 		}
-		label = FT_LIST_GET_NEXT(&label_list, label);
+		label = ft_list_get_next((void **)&label_list, (void *)label);
 	}
 	ft_assert(label, "Label should be found here");
 }
@@ -92,6 +92,6 @@ void	normalize_args(t_instr *inst_list, t_label *label_list)
 				m_resolve_label_arg(inst, label_list, i);
 			i++;
 		}
-		inst = FT_LIST_GET_NEXT(&inst_list, inst);
+		inst = ft_list_get_next((void **)&inst_list, (void *)inst);
 	}
 }

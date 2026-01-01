@@ -30,7 +30,7 @@ static int	m_do_fork(t_vm *vm, t_proc *p, int new_pc)
 	child->last_live_cycle = p->last_live_cycle;
 	child->op_wait = 0;
 	child->opcode = 0;
-	FT_LIST_ADD_FIRST(&vm->procs, child);
+	ft_list_add_first((void **)&vm->procs, (void *)child);
 	log_msg(LOG_I,
 		"Process %d: fork → child %d at pc %d\n",
 		p->id, child->id, child->pc);

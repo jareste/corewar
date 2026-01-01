@@ -40,7 +40,7 @@ t_label	*find_label(t_label *label_list, const char *name)
 	{
 		if (ft_strcmp(lab->name, name) == 0)
 			return (lab);
-		lab = FT_LIST_GET_NEXT(&label_list, lab);
+		lab = ft_list_get_next((void **)&label_list, (void *)lab);
 	}
 	return (NULL);
 }
@@ -97,7 +97,7 @@ void	m_print_labels(t_label *label_list)
 	while (lab)
 	{
 		log_msg(LOG_I, "  %s at offset %d\n", lab->name, lab->offset);
-		lab = FT_LIST_GET_NEXT(&label_list, lab);
+		lab = ft_list_get_next((void **)&label_list, (void *)lab);
 	}
 }
 

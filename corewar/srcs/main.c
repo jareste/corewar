@@ -40,7 +40,7 @@ void	load_champ_into_vm(t_vm *vm, t_champ *champ, int player_id)
 	memcpy(&vm->memory[offset], champ->code, champ->size);
 	proc = create_process(new_pid(), offset, player_id);
 	log_msg(LOG_I, "Adding %p at offset %p\n", vm->procs, &vm->procs);
-	FT_LIST_ADD_FIRST(&vm->procs, proc);
+	ft_list_add_first((void **)&vm->procs, (void *)proc);
 	vm->last_alive_player = player_id;
 	log_msg(LOG_I, "Loaded champion '%s' at offset %d\n", champ->name, offset);
 }
@@ -56,7 +56,7 @@ void	m_run(t_vm *vm)
 		while (proc)
 		{
 			step_proc(vm, proc);
-			proc = FT_LIST_GET_NEXT(&vm->procs, proc);
+			proc = ft_list_get_next((void **)&vm->procs, (void *)proc);
 		}
 		if (vm->cycle % vm->cycle_to_die == 0)
 		{

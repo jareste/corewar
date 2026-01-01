@@ -112,7 +112,7 @@ int	encode_instruction_list(t_instr *inst_list, uint8_t **code)
 	while (inst)
 	{
 		encode_instruction(inst, *code);
-		inst = FT_LIST_GET_NEXT(&inst_list, inst);
+		inst = ft_list_get_next((void **)&inst_list, (void *)inst);
 	}
 	return (0);
 }

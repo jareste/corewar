@@ -39,12 +39,12 @@ void	m_kill_deads(t_vm *vm)
 			log_msg(LOG_I, "Process %d: has died (last live at cycle %d)\n",
 				proc->id, proc->last_live_cycle);
 			to_delete = proc;
-			proc = FT_LIST_GET_NEXT(&vm->procs, proc);
-			FT_LIST_POP(&vm->procs, to_delete);
+			proc = ft_list_get_next((void **)&vm->procs, (void *)proc);
+			ft_list_pop(&vm->procs, to_delete);
 			free(to_delete);
 			continue ;
 		}
-		proc = FT_LIST_GET_NEXT(&vm->procs, proc);
+		proc = ft_list_get_next((void **)&vm->procs, (void *)proc);
 	}
 }
 
