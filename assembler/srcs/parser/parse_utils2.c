@@ -24,6 +24,7 @@
 #include <libft.h>
 #include "parse_internal.h"
 #include "log.h"
+#include "ft_malloc.h"
 #include "../encode/encode.h"
 
 t_label	*m_new_label(const char *name)
@@ -40,7 +41,7 @@ t_label	*m_new_label(const char *name)
 			return (NULL);
 		p++;
 	}
-	label = NEW(t_label, 1);
+	label = ft_calloc(1, sizeof(t_label));
 	label->name = ft_strdup(name);
 	return (label);
 }

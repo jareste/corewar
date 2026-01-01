@@ -15,7 +15,7 @@
 #include <time.h>
 #include <string.h>
 #include <stdbool.h>
-#define DEBUG /* TODO remove*/
+
 #ifdef DEBUG
 
 static FILE *m_log_fp        = NULL;

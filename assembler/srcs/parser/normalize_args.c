@@ -71,7 +71,7 @@ static void	m_resolve_label_arg(t_instr *inst, t_label *label_list, int i)
 		}
 		label = ft_list_get_next((void **)&label_list, (void *)label);
 	}
-	ft_assert(label, "Label should be found here");
+	ft_assert(label != NULL, "Label should be found here");
 }
 
 void	normalize_args(t_instr *inst_list, t_label *label_list)

@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include <string.h>
-#include "ft_malloc.h"
 #include "log.h"
 #include "../corewar.h"
 #include "../process/process.h"

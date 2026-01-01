@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include <string.h>
-#include "ft_malloc.h"
 #include "log.h"
 #include "../corewar.h"
 #include "../process/process.h"
@@ -40,7 +39,7 @@ void	m_kill_deads(t_vm *vm)
 				proc->id, proc->last_live_cycle);
 			to_delete = proc;
 			proc = ft_list_get_next((void **)&vm->procs, (void *)proc);
-			ft_list_pop(&vm->procs, to_delete);
+			ft_list_pop((void **)&vm->procs, (void *)to_delete);
 			free(to_delete);
 			continue ;
 		}

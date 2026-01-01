@@ -13,11 +13,13 @@
 NAME = libutil.a
 
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -I.
+CFLAGS = -Wall -Wextra -Werror -I. -L../libft -lft -I../libft
 SRC_PATH = .
 
 SRCS = log.c \
 	ft_list.c \
+	ft_list2.c \
+	ft_list3.c \
 	ft_malloc.c \
 	gnl.c \
 	gnl_utils.c

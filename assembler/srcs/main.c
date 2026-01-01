@@ -35,7 +35,7 @@ int	m_initialize(t_header *h, t_parser_state *ps, uint8_t **code, char **argv)
 		return (1);
 	}
 	encode_instruction_list(ps->i_l, code);
-	ft_assert(*code, "Encoding failed");
+	ft_assert(*code != NULL, "Encoding failed");
 	return (0);
 }
 

@@ -33,7 +33,7 @@ static char	*m_fill_instr(char *s, int line_no, t_instr **out_inst)
 	t_op	*op;
 	size_t	len;
 
-	inst = NEW(t_instr, 1);
+	inst = ft_calloc(1, sizeof(t_instr));
 	*out_inst = inst;
 	end = s + ft_strcspn(s, " \t\n\r\f\v");
 	len = end - s;
@@ -86,7 +86,7 @@ int	m_parse_tokens(char *arg_str, t_instr *inst)
 				inst->args[inst->arg_count].type = ARG_DIR;
 			else
 				inst->args[inst->arg_count].type = ARG_IND;
-			inst->args[inst->arg_count].expr = strdup(token);
+			inst->args[inst->arg_count].expr = ft_strdup(token);
 			if (!inst->args[inst->arg_count].expr)
 				return (-1);
 		}

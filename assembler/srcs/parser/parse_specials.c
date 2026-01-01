@@ -83,10 +83,10 @@ static int	m_handle_dot_code(char *line, int line_no, t_parser_state *p_st)
 		tmp[n++] = m_str_to_hex(p, line_no);
 		p += 2;
 	}
-	inst = NEW(t_instr, 1);
+	inst = ft_calloc(1, sizeof(t_instr));
 	inst->line_no = line_no;
 	inst->op = NULL;
-	inst->raw = malloc(n);
+	inst->raw = ft_malloc(n);
 	ft_memcpy(inst->raw, tmp, n);
 	inst->raw_len = n;
 	ft_list_add_last((void **)&p_st->i_l, (void *)inst);

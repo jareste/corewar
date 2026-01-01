@@ -29,7 +29,7 @@ t_proc	*create_process(int id, int pc, int owner_id)
 {
 	t_proc	*proc;
 
-	proc = (t_proc *)malloc(sizeof(t_proc));
+	proc = (t_proc *)ft_malloc(sizeof(t_proc));
 	proc->id = id;
 	memset(proc->regs, 0, sizeof(proc->regs));
 	proc->pc = pc % MEM_SIZE;

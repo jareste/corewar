@@ -10,15 +10,11 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef FT_MALLOC_H
-# define FT_MALLOC_H
+#include "ft_list.h"
+#include "error_codes.h"
+#include <stddef.h>
 
-# include <stdlib.h>
-
-void	*ft_malloc(size_t size);
-char	*ft_strdup(const char *s);
-char	*ft_strndup(const char *s, size_t n);
-void	ft_assert(int expr, const char *message);
-void	*ft_calloc(size_t count, size_t size);
-
-#endif /* FT_MALLOC_H */
+int	ft_list_pop_first(void **_head)
+{
+	return (ft_list_pop(_head, ft_list_get_first(_head)));
+}
