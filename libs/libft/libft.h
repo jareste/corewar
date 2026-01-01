@@ -16,23 +16,24 @@
 # include <stdlib.h>
 # include <unistd.h>
 
-#ifndef SSIZE_MAX
-#define SSIZE_MAX ((ssize_t)~0U >> 1)
-#endif
-#ifndef SSIZE_MIN
-#define SSIZE_MIN (-(SSIZE_MAX + 1))
-#endif
+// # ifndef SSIZE_MAX
+// #  define SSIZE_MAX ((ssize_t)~0U >> 1)
+// # endif
+// # ifndef SSIZE_MIN
+// #  define SSIZE_MIN (-(SSIZE_MAX + 1))
+// # endif
 
-typedef unsigned long ulong;
-typedef long long llong;
+typedef unsigned long		t_ul;
+typedef unsigned long long	t_ull;
+typedef long long			t_ll;
+typedef const char			t_cc;
 
 int		ft_atoi(const char *str);
-ssize_t	ft_atossize(const char *str);
 void	ft_bzero(void *s, size_t n);
 int		ft_isalnum(int c);
 int		ft_isalpha(int c);
 int		ft_isascii(int c);
-int     ft_isxdigit(int c);
+int		ft_isxdigit(int c);
 int		ft_isdigit(int c);
 int		ft_isprint(int c);
 int		ft_isspace(int c);
@@ -66,23 +67,22 @@ void	ft_putendl_fd(char *s, int fd);
 void	ft_putnbr_fd(int n, int fd);
 size_t	ft_strcspn(const char *s, const char *reject);
 int		ft_strcmp(const char *s1, const char *s2);
-char    *ft_strtok(char *restrict str, const char *restrict delim);
+char	*ft_strtok(char *restrict str, const char *restrict delim);
 size_t	ft_strspn(const char *s, const char *accept);
-ulong   ft_strtoul(const char *restrict nptr, char **restrict endptr,
-				int base);
+t_ul	ft_strtoul(const char *restrict nptr, char **restrict endptr,
+			int base);
 long	ft_strtol(const char *restrict nptr, char **restrict endptr,
-				int base);
-llong	ft_strtoll(const char *restrict nptr, char **restrict endptr,
-				int base);
+			int base);
+t_ll	ft_strtoll(const char *restrict nptr, char **restrict endptr,
+			int base);
 
-int	parse_digits(const char **ps, unsigned long long *acc,
-		unsigned long long lim, int base);
-unsigned long long	acc_step(unsigned long long acc,
-		unsigned long long base, int digit);
-const char	*skip_0x(const char *s, int base);
+int		parse_digits(const char **ps, unsigned long long *acc,
+			unsigned long long lim, int base);
+t_ull	acc_step(t_ull acc, t_ull base, int digit);
+t_cc	*skip_0x(const char *s, int base);
 void	set_endptr(char **endptr, const char *nptr,
-		const char *s, int any);
-unsigned long long	get_lim(int neg);
-int	digit_value(char c);
+			const char *s, int any);
+t_ull	get_lim(int neg);
+int		digit_value(char c);
 
 #endif

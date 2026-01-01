@@ -24,12 +24,12 @@ size_t	ft_strspn(const char *s, const char *accept)
 		while (accept[j])
 		{
 			if (s[i] == accept[j])
-				break;
+				break ;
 			j++;
 		}
 		if (accept[j] == '\0')
-			return i;
+			return (i);
 		i++;
 	}
-	return i;
+	return (i);
 }
