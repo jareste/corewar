@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_atoi.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: jareste- <jareste-@student.42barcel>       +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/05/03 12:24:26 by jareste-          #+#    #+#             */
+/*   Updated: 2023/05/08 23:47:53 by jareste-         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
@@ -22,14 +34,14 @@ void	load_champ_into_vm(t_vm *vm, t_champ *champ, int player_id)
 {
 	t_proc	*proc;
 	int		offset;
-	
+
 	offset = (MEM_SIZE / MAX_PLAYERS) * player_id;
 	memcpy(&vm->memory[offset], champ->code, champ->size);
 	proc = create_process(new_pid(), offset, player_id);
 	log_msg(LOG_I, "Adding %p at offset %p\n", vm->procs, &vm->procs);
 	FT_LIST_ADD_FIRST(&vm->procs, proc);
 	vm->last_alive_player = player_id;
-	log_msg(LOG_I, "Loaded champion '%s' into VM at offset %d\n", champ->name, offset);
+	log_msg(LOG_I, "Loaded champion '%s' at offset %d\n", champ->name, offset);
 }
 
 void	m_run(t_vm *vm)
@@ -47,39 +59,52 @@ void	m_run(t_vm *vm)
 		}
 		if (vm->cycle % vm->cycle_to_die == 0)
 		{
-			log_msg(LOG_I, "Cycle %d: Performing cycle to die check\n", vm->cycle);
+			log_msg(LOG_I, "Cycle %d: cycle to die check\n", vm->cycle);
 			proc_check_deads(vm);
 		}
 	}
 }
 
+/* should i check for some flag? */
 int	m_create_champs_from_av(t_vm *vm, char **av, int ac)
 {
-	if (decode_file(argv[1], &champ) != 0)
-	{
-		fprintf(stderr, "Error: Failed to decode file %s\n", argv[1]);
-		return 1;
-	}
-	load_champ_into_vm(&vm, &champ, 0);
+	t_champ	champ;
+	int		i;
 
+	i = 1;
+	while (i < ac)
+	{
+		if (decode_file(av[i], &champ) != 0)
+		{
+			ft_dprintf(2, "Error: Failed to decode file %s\n", av[i]);
+			return (1);
+		}
+		load_champ_into_vm(vm, &champ, i - 1);
+		i++;
+	}
+	return (0);
 }
 
 int	main(int argc, char **argv)
 {
-	t_champ	champ;
 	t_vm	vm;
 
-	if (argc != 2)
+	if (argc < 2)
 	{
-		fprintf(stderr, "Usage: %s <source_file>\n", argv[0]);
-		return 1;
+		ft_dprintf(2, "Usage: %s <source_file>\n", argv[0]);
+		return (1);
 	}
 	if (log_init() != 0)
 	{
-		fprintf(stderr, "Error: Could not initialize logging system\n");
-		return 1;
+		ft_dprintf(2, "Error: Could not initialize logging system\n");
+		return (1);
 	}
 	init_vm(&vm);
+	if (m_create_champs_from_av(&vm, argv, argc) != 0)
+	{
+		log_close();
+		return (1);
+	}
 	m_run(&vm);
-	return 0;
+	return (0);
 }
