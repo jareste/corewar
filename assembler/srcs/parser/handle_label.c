@@ -26,6 +26,7 @@
 #include "parse_internal.h"
 #include <gnl.h>
 #include <libft.h>
+#include "ft_printf.h"
 
 static int	m_handle_instr_part(char *instr_part, uint32_t line_no,
 		t_parser_state *p_st, t_label *def_label)
@@ -37,7 +38,7 @@ static int	m_handle_instr_part(char *instr_part, uint32_t line_no,
 		inst = m_new_instruction(instr_part, line_no);
 		if (!inst)
 		{
-			log_msg(LOG_E, "Error: Invalid instruction at line %u\n", line_no);
+			ft_dprintf(2, "Error: Invalid instruction at line %u\n", line_no);
 			exit(1);
 		}
 		if (def_label)
@@ -63,7 +64,7 @@ static char	*m_handle_label(char *colon, char *line, t_label **def_label,
 	*def_label = m_new_label(line);
 	if (!*def_label)
 	{
-		log_msg(LOG_E, "Invalid label name '%s' at %u\n", line, line_no);
+		ft_dprintf(2, "Invalid label name '%s' at %u\n", line, line_no);
 		exit(1);
 	}
 	(*def_label)->line_no = line_no;

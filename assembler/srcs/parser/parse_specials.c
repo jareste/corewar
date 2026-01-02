@@ -25,6 +25,7 @@
 #include "log.h"
 #include "../encode/encode.h"
 #include "parse_internal.h"
+#include "ft_printf.h"
 
 static int	m_fill_header_string(char *src, char *dest, size_t max)
 {
@@ -56,7 +57,7 @@ static uint8_t	m_str_to_hex(char *p, int line_no)
 
 	if (!isxdigit((unsigned char)p[0]) || !isxdigit((unsigned char)p[1]))
 	{
-		log_msg(LOG_E, "Bad .code byte at line %u: '%s'\n", line_no, p);
+		ft_dprintf(2, "Bad .code byte at line %u: '%s'\n", line_no, p);
 		exit(1);
 	}
 	byte_str[0] = p[0];

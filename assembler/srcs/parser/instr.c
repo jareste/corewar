@@ -25,6 +25,7 @@
 #include "log.h"
 #include "../encode/encode.h"
 #include "parse_internal.h"
+#include "ft_printf.h"
 
 static char	*m_fill_instr(char *s, int line_no, t_instr **out_inst)
 {
@@ -40,7 +41,7 @@ static char	*m_fill_instr(char *s, int line_no, t_instr **out_inst)
 	op = m_find_op(s, len);
 	if (!op)
 	{
-		log_msg(LOG_E, "Error: Unknown operation '%.*s' at line %d\n",
+		ft_dprintf(2, "Error: Unknown operation '%.*s' at line %d\n",
 			(int)len, s, line_no);
 		return (NULL);
 	}
@@ -106,7 +107,7 @@ static int	m_validate_args(t_instr *in)
 
 	if (in->arg_count != in->op->nb_params)
 	{
-		log_msg(LOG_E, "Error: Expected %d args for '%s' at line %d, got %d\n",
+		ft_dprintf(2, "Error: Expected %d args for '%s' at line %d, got %d\n",
 			in->op->nb_params, in->op->name, in->line_no, in->arg_count);
 		return (-1);
 	}
@@ -116,7 +117,7 @@ static int	m_validate_args(t_instr *in)
 		mask = m_mask_for_arg_type(in->args[i].type);
 		if (!(in->op->param_types[i] & mask))
 		{
-			log_msg(LOG_E, "Error: Wrong type for arg %d of '%s' at line %d\n",
+			ft_dprintf(2, "Error: Wrong type for arg %d of '%s' at line %d\n",
 				i + 1, in->op->name, in->line_no);
 			return (-1);
 		}

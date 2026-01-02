@@ -25,6 +25,7 @@
 #include "log.h"
 #include "../encode/encode.h"
 #include "parse_internal.h"
+#include "ft_printf.h"
 
 static void	m_eval_arg_expr(t_instr *inst, t_label *label_list, int i)
 {
@@ -64,14 +65,19 @@ static void	m_resolve_label_arg(t_instr *inst, t_label *label_list, int i)
 	label = label_list;
 	while (label)
 	{
-		if (ft_strcmp(label->name, inst->args[i].u_.label) == 0)
+		if (ft_strncmp(label->name, inst->args[i].u_.label, ft_strlen(inst->args[i].u_.label)) == 0)
 		{
 			m_update_label_arg(inst, label, i);
 			break ;
 		}
 		label = ft_list_get_next((void **)&label_list, (void *)label);
 	}
-	ft_assert(label != NULL, "Label should be found here");
+	if (!label)
+	{
+		ft_dprintf(2, "Error: Undefined label '%s' at line %d\n",
+			inst->args[i].u_.label, inst->line_no);
+		exit(1);
+	}
 }
 
 void	normalize_args(t_instr *inst_list, t_label *label_list)

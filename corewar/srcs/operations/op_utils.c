@@ -73,7 +73,7 @@ int32_t	get_value(t_vm *vm, t_proc *p, t_arg *a)
 	{
 		if (a->value < 1 || a->value > REG_NUMBER)
 		{
-			log_msg(LOG_E, "Invalid register r%d\n", a->value);
+			ft_dprintf(2, "Invalid register r%d\n", a->value);
 			exit(EXIT_FAILURE);
 		}
 		return (p->regs[a->value - 1]);

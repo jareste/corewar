@@ -25,6 +25,7 @@
 #include "log.h"
 #include "../encode/encode.h"
 #include "parse_internal.h"
+#include "ft_printf.h"
 
 static int	m_skip_signs_spaces(const char **s, int *sign)
 {
@@ -72,7 +73,7 @@ static int	m_parse_label_term(const char **s, t_label *label_list,
 	lab = find_label(label_list, name);
 	if (!lab)
 	{
-		log_msg(LOG_E, "Error: Undefined label '%s' in expr\n", name);
+		ft_dprintf(2, "Error: Undefined label '%s' in expr\n", name);
 		return (-1);
 	}
 	*term = lab->offset;
@@ -88,7 +89,7 @@ static int	m_parse_non_label_term(const char **s, int *term)
 	endptr += m_parse_num32(*s, (int32_t *)&v);
 	if (endptr == *s || endptr < *s)
 	{
-		log_msg(LOG_E, "Error: Bad number in expr\n");
+		ft_dprintf(2, "Error: Bad number in expr\n");
 		return (-1);
 	}
 	*term = v;
