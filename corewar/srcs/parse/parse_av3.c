@@ -17,63 +17,34 @@
 #include <unistd.h>
 #include "log.h"
 #include "libft.h"
-#include "corewar.h"
 #include "ft_printf.h"
-#include "decode/decode.h"
-#include "process/process.h"
-#include "parse/parse.h"
 
-void	init_vm(t_vm *vm)
+int	is_cor_file(char *s)
 {
-	ft_memset(vm->memory, 0, MEM_SIZE);
-	vm->procs = NULL;
-	vm->cycle = 0;
-	vm->cycle_to_die = CYCLE_TO_DIE;
-	vm->last_check_cycle = 0;
-	vm->last_alive_player = -1;
+	int	len;
+
+	len = ft_strlen(s);
+	if (len < 5)
+		return (0);
+	return (ft_strncmp(s + len - 4, ".cor", 4) == 0);
 }
 
-void	m_run(t_vm *vm)
+int	is_number_str(char *s)
 {
-	t_proc	*proc;
+	int	i;
 
-	while (1)
+	if (!s || !s[0])
+		return (0);
+	i = 0;
+	if (s[i] == '+' || s[i] == '-')
+		i++;
+	if (!s[i])
+		return (0);
+	while (s[i])
 	{
-		vm->cycle++;
-		proc = vm->procs;
-		while (proc)
-		{
-			step_proc(vm, proc);
-			proc = ft_list_get_next((void **)&vm->procs, (void *)proc);
-		}
-		if (vm->cycle % vm->cycle_to_die == 0)
-		{
-			log_msg(LOG_I, "Cycle %d: cycle to die check\n", vm->cycle);
-			proc_check_deads(vm);
-		}
+		if (!ft_isdigit((unsigned char)s[i]))
+			return (0);
+		i++;
 	}
-}
-
-int	main(int argc, char **argv)
-{
-	t_vm	vm;
-
-	if (argc < 2)
-	{
-		ft_dprintf(2, "Usage: %s <source_file>\n", argv[0]);
-		return (1);
-	}
-	if (log_init() != 0)
-	{
-		ft_dprintf(2, "Error: Could not initialize logging system\n");
-		return (1);
-	}
-	init_vm(&vm);
-	if (parse_av(&vm, argv + 1, argc - 1) != 0)
-	{
-		log_close();
-		return (1);
-	}
-	m_run(&vm);
-	return (0);
+	return (1);
 }

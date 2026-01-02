@@ -19,11 +19,11 @@ LIBS_A = $(LIBFT_A) $(PRINTF_A) $(UTIL_A)
 
 #########
 FILES = main op decode process operations check_deads exec_read_arg exec_dec_arg_types \
-		process_utils fork or st ld jmp_live and_aff add_sub op_utils
+		process_utils fork or st ld jmp_live and_aff add_sub op_utils parse_av parse_av2 parse_av3
 
 SRC = $(addsuffix .c, $(FILES))
 
-vpath %.c srcs inc ../op srcs/decode srcs/process srcs/operations
+vpath %.c srcs inc ../op srcs/decode srcs/process srcs/operations srcs/parse
 #########
 
 OBJ_DIR = objs
