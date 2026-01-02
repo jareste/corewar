@@ -46,7 +46,9 @@ void	load_champ_into_vm(t_vm *vm, t_champ *champ, int player_id)
 	ft_list_add_first((void **)&vm->procs, (void *)proc);
 	vm->last_alive_player = player_id;
 	ft_memcpy(vm->la_name, champ->name, PROG_NAME_LENGTH + 1);
-	log_msg(LOG_I, "Loaded champion '%s' at offset %d\n", champ->name, offset);
+	champ->id = player_id + 1;
+	log_msg(LOG_I, "Loaded champion[%d] '%s' at offset %d\n",
+		champ->id, champ->name, offset);
 }
 
 void	m_run(t_vm *vm)
@@ -73,18 +75,20 @@ void	m_run(t_vm *vm)
 /* should i check for some flag? */
 int	m_create_champs_from_av(t_vm *vm, char **av, int ac)
 {
-	t_champ	champ;
 	int		i;
+	int		champ_num;
 
 	i = 1;
+	champ_num = 0;
 	while (i < ac)
 	{
-		if (decode_file(av[i], &champ) != 0)
+		if (decode_file(av[i], &vm->champs[i - 1]) != 0)
 		{
 			ft_dprintf(2, "Error: Failed to decode file %s\n", av[i]);
 			return (1);
 		}
-		load_champ_into_vm(vm, &champ, i - 1);
+		load_champ_into_vm(vm, &vm->champs[champ_num], champ_num);
+		champ_num++;
 		i++;
 	}
 	return (0);

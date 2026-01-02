@@ -24,8 +24,7 @@ int	m_op_live(t_vm *vm, t_proc *proc, t_arg *args)
 	t_champ	*champ;
 
 	champ_id = args[0].value;
-	champ = find_champ_by_id(vm, champ_id);
-    log_msg(LOG_D, "Process[%d] %d: LIVE %d\n", proc->id, proc->last_live_cycle, vm->cycle - proc->last_live_cycle >= vm->cycle_to_die);
+	champ = find_champ_by_id(vm, champ_id + 1);
 	proc->last_live_cycle = vm->cycle;
 	vm->lives_in_period++;
 	log_msg(LOG_I,
@@ -34,7 +33,7 @@ int	m_op_live(t_vm *vm, t_proc *proc, t_arg *args)
 	if (champ)
 	{
 		vm->last_alive_player = champ_id;
-    	ft_memcpy(vm->la_name, champ->name, PROG_NAME_LENGTH + 1);
+		ft_memcpy(vm->la_name, champ->name, PROG_NAME_LENGTH + 1);
 		log_msg(LOG_I, "Champ %d (%s) is reported alive!\n",
 			champ->id, champ->name);
 	}

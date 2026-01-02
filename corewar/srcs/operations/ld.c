@@ -26,6 +26,7 @@ int	m_op_ldi(t_vm *vm, t_proc *p, t_arg *args)
 	int32_t	val;
 	int		reg;
 
+	log_msg(LOG_D, "Process [%d] %p: LDI called\n", p->id, (void *)p);
 	reg = args[2].value;
 	if (reg < 1 || reg > REG_NUMBER)
 	{
@@ -52,6 +53,7 @@ int	m_op_lldi(t_vm *vm, t_proc *p, t_arg *args)
 	int32_t	val;
 	int		reg;
 
+	log_msg(LOG_D, "Process [%d] %p: LLDI called\n", p->id, (void *)p);
 	reg = args[2].value;
 	if (reg < 1 || reg > REG_NUMBER)
 	{
@@ -76,15 +78,18 @@ int	m_op_lld(t_vm *vm, t_proc *p, t_arg *args)
 	int32_t	arg2;
 	int32_t	addr;
 
-	(void)vm;
+	log_msg(LOG_D, "Process [%d] %p: LLD called\n", p->id, (void *)p);
 	if (args[0].type == PARAM_INDIRECT)
 	{
 		addr = p->pc + args[0].value;
 		arg1 = m_mem_read(vm, addr, 4);
 	}
 	else
-	{
 		arg1 = get_value(vm, p, &args[0]);
+	if (args[1].value < 1 || args[1].value > REG_NUMBER)
+	{
+		log_msg(LOG_W, "Invalid register r%d in LLD\n", args[1].value);
+		return (0);
 	}
 	arg2 = get_value(vm, p, &args[1]);
 	p->regs[arg2 - 1] = arg1;
@@ -102,6 +107,7 @@ int	m_op_ld(t_vm *vm, t_proc *p, t_arg *args)
 	t_arg	lld_args[2];
 
 	(void)vm;
+	log_msg(LOG_D, "Process [%d] %p: LD called\n", p->id, (void *)p);
 	arg1 = get_value(vm, p, &args[0]);
 	arg2 = get_value(vm, p, &args[1]);
 	lld_args[0].type = PARAM_DIRECT;

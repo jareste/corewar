@@ -40,6 +40,8 @@ t_proc	*create_process(int id, int pc, int owner_id)
 	proc->regs[0] = owner_id;
 	proc->l.next = NULL;
 	proc->l.prev = NULL;
+	log_msg(LOG_I, "Created process %d for owner %d at pc %d\n",
+		proc->id, owner_id, proc->pc);
 	return (proc);
 }
 
@@ -152,8 +154,8 @@ void	execute_instruction(t_vm *vm, t_proc *proc)
 	exec_init(&c, vm, proc);
 	if (exec_fetch_opcode(&c))
 		return ;
-	log_msg(LOG_I, "Process %d: Executing opcode %s at pc %d.\n",
-		proc->id, c.op->name, c.prev_pc);
+	log_msg(LOG_I, "Process [%d] %p: Executing opcode %s at pc %d.\n",
+		proc->id, (void *)proc, c.op->name, c.prev_pc);
 	decode_inst(vm->memory, MEM_SIZE, c.prev_pc);
 	if (exec_decode_arg_types(&c))
 		return ;

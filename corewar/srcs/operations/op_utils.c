@@ -70,14 +70,14 @@ int32_t	get_value(t_vm *vm, t_proc *p, t_arg *a)
 	int	addr;
 
 	if (a->type == PARAM_REGISTER)
-    {
-        if (a->value < 1 || a->value > REG_NUMBER)
-        {
-            log_msg(LOG_E, "Invalid register r%d\n", a->value);
-            return (0);
-        }
-        return (p->regs[a->value - 1]);
-    }
+	{
+		if (a->value < 1 || a->value > REG_NUMBER)
+		{
+			log_msg(LOG_E, "Invalid register r%d\n", a->value);
+			exit(EXIT_FAILURE);
+		}
+		return (p->regs[a->value - 1]);
+	}
 	if (a->type == PARAM_INDIRECT)
 	{
 		addr = p->pc + (a->value % IDX_MOD);
@@ -93,10 +93,14 @@ t_champ	*find_champ_by_id(t_vm *vm, int id)
 	i = 0;
 	while (i < MAX_PLAYERS)
 	{
-		log_msg(LOG_D, "Checking champ id %d against %d\n",
-			vm->champs[i].id, id);
+		log_msg(LOG_D, "Checking champ id[%d][%d] '%s' against %d\n",
+			i, vm->champs[i].id, vm->champs[i].name, id);
 		if (vm->champs[i].id == id)
+		{
+			log_msg(LOG_D, "Found champ[%d] id[%d] '%s'\n",
+				id, vm->champs[i].id, vm->champs[i].name);
 			return (&vm->champs[i]);
+		}
 		i++;
 	}
 	return (NULL);

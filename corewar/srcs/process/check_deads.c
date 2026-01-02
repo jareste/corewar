@@ -17,6 +17,20 @@
 #include "../process/process.h"
 #include "../operations/operations.h"
 
+// static void m_print_all_procs(t_vm *vm)
+// {
+// 	t_proc	*proc;
+
+// 	proc = vm->procs;
+// 	log_msg(LOG_D, "Current processes:\n");
+// 	while (proc)
+// 	{
+// 		log_msg(LOG_D, "  Process[%d] %p: last_live_cycle=%d\n",
+// 			proc->id, (void *)proc, proc->last_live_cycle);
+// 		proc = ft_list_get_next((void **)&vm->procs, (void *)proc);
+// 	}
+// }
+
 static void	m_kill_deads(t_vm *vm)
 {
 	t_proc	*proc;
@@ -32,6 +46,8 @@ static void	m_kill_deads(t_vm *vm)
 			to_delete = proc;
 			proc = ft_list_get_next((void **)&vm->procs, (void *)proc);
 			ft_list_pop((void **)&vm->procs, (void *)to_delete);
+			log_msg(LOG_I, "Process[%d] %p has died\n",
+				to_delete->id, (void *)to_delete);
 			free(to_delete);
 			continue ;
 		}
@@ -72,8 +88,8 @@ static void	m_check_vm_finished(t_vm *vm)
 	if ((vm->procs == NULL) || (m_count_alive_champs(vm) == 1))
 	{
 		log_msg(LOG_I, "All processes have died\n");
-		ft_dprintf(1, "The winner is Champion %d: %s\n",
-			vm->last_alive_player+1, vm->la_name);
+		ft_dprintf(1, "The winner is Champion %d: '%s'\n",
+			vm->last_alive_player + 1, vm->la_name);
 		exit(0);
 	}
 }
