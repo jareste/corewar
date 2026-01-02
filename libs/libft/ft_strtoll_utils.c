@@ -20,11 +20,43 @@ const char	*skip_0x(const char *s, int base)
 	return (s);
 }
 
-unsigned long long	get_lim(int neg)
+int	digit_value(char c)
 {
-	if (neg)
-		return ((unsigned long long)LLONG_MAX + 1ULL);
-	return ((unsigned long long)LLONG_MAX);
+	if (c >= '0' && c <= '9')
+		return (c - '0');
+	if (c >= 'a' && c <= 'z')
+		return (c - 'a' + 10);
+	if (c >= 'A' && c <= 'Z')
+		return (c - 'A' + 10);
+	return (-1);
+}
+
+int	detect_base(const char *s, int base)
+{
+	if (base != 0)
+		return (base);
+	if (*s == '0')
+	{
+		if ((s[1] == 'x' || s[1] == 'X')
+			&& ft_isxdigit((unsigned char)s[2]))
+			return (16);
+		return (8);
+	}
+	return (10);
+}
+
+const char	*skip_spaces_sign(const char *s, int *neg)
+{
+	while (ft_isspace((unsigned char)*s))
+		s++;
+	*neg = 0;
+	if (*s == '+' || *s == '-')
+	{
+		if (*s == '-')
+			*neg = 1;
+		s++;
+	}
+	return (s);
 }
 
 void	set_endptr(char **endptr, const char *nptr,
@@ -36,44 +68,4 @@ void	set_endptr(char **endptr, const char *nptr,
 		*endptr = (char *)nptr;
 	else
 		*endptr = (char *)s;
-}
-
-unsigned long long	acc_step(unsigned long long acc,
-		unsigned long long base, int digit)
-{
-	return (acc * base + (unsigned long long)digit);
-}
-
-int	parse_digits(const char **ps, unsigned long long *acc,
-		unsigned long long lim, int base)
-{
-	const char			*s;
-	unsigned long long	cutoff;
-	int					cutlim;
-	int					any;
-	int					digit;
-
-	s = *ps;
-	cutoff = lim / (unsigned long long)base;
-	cutlim = (int)(lim % (unsigned long long)base);
-	any = 0;
-	while (*s)
-	{
-		digit = digit_value(*s);
-		if (digit < 0 || digit >= base)
-			break ;
-		if (any >= 0 && (*acc > cutoff || (*acc == cutoff && digit > cutlim)))
-		{
-			any = -1;
-			*acc = lim;
-		}
-		else if (any >= 0)
-		{
-			any = 1;
-			*acc = acc_step(*acc, (unsigned long long)base, digit);
-		}
-		s++;
-	}
-	*ps = s;
-	return (any);
 }

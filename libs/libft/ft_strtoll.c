@@ -13,43 +13,52 @@
 #include "libft.h"
 #include <limits.h>
 
-int	digit_value(char c)
+static unsigned long long	get_lim(int neg)
 {
-	if (c >= '0' && c <= '9')
-		return (c - '0');
-	if (c >= 'a' && c <= 'z')
-		return (c - 'a' + 10);
-	if (c >= 'A' && c <= 'Z')
-		return (c - 'A' + 10);
-	return (-1);
+	if (neg)
+		return ((unsigned long long)LLONG_MAX + 1ULL);
+	return ((unsigned long long)LLONG_MAX);
 }
 
-static const char	*skip_spaces_sign(const char *s, int *neg)
+static unsigned long long	acc_step(unsigned long long acc,
+		unsigned long long base, int digit)
 {
-	while (ft_isspace((unsigned char)*s))
-		s++;
-	*neg = 0;
-	if (*s == '+' || *s == '-')
-	{
-		if (*s == '-')
-			*neg = 1;
-		s++;
-	}
-	return (s);
+	return (acc * base + (unsigned long long)digit);
 }
 
-static int	detect_base(const char *s, int base)
+static void	m_set_any_acc(int *any, int any_val,
+	t_ull *acc, t_ull lim)
 {
-	if (base != 0)
-		return (base);
-	if (*s == '0')
+	*any = any_val;
+	*acc = lim;
+}
+
+int	parse_digits(const char **ps, unsigned long long *acc,
+		unsigned long long lim, int base)
+{
+	const char			*s;
+	unsigned long long	cutoff;
+	int					cutlim;
+	int					any;
+	int					digit;
+
+	s = *ps;
+	cutoff = lim / (unsigned long long)base;
+	cutlim = (int)(lim % (unsigned long long)base);
+	any = 0;
+	while (*s)
 	{
-		if ((s[1] == 'x' || s[1] == 'X')
-			&& ft_isxdigit((unsigned char)s[2]))
-			return (16);
-		return (8);
+		digit = digit_value(*s);
+		if (digit < 0 || digit >= base)
+			break ;
+		if (any >= 0 && (*acc > cutoff || (*acc == cutoff && digit > cutlim)))
+			m_set_any_acc(&any, -1, acc, lim);
+		else if (any >= 0)
+			m_set_any_acc(&any, 1, acc, acc_step(*acc, (t_ull) base, digit));
+		s++;
 	}
-	return (10);
+	*ps = s;
+	return (any);
 }
 
 long long	ft_strtoll(const char *restrict nptr,
