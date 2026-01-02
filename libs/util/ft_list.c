@@ -41,28 +41,40 @@ int	ft_list_add_last(void **_head, void *_node)
 
 int	ft_list_add_first(void **_head, void *_node)
 {
-	t_list_item	**head;
-	t_list_item	*node;
-	t_list_item	*first;
+	int	ret;
 
-	head = (t_list_item **)_head;
-	node = (t_list_item *)_node;
-	if (!head || !node)
-		return (INVALID_ARGS);
-	if (!*head)
-	{
-		*head = node;
-		node->next = node;
-		node->prev = node;
-		return (OK);
-	}
-	first = *head;
-	while (first->prev != *head)
-		first = first->prev;
-	first->prev = node;
-	node->next = first;
+	ret = ft_list_add_last(_head, _node);
+	if (ret != OK)
+		return (ret);
+	*(t_list_item **)_head = (t_list_item *)_node;
 	return (OK);
 }
+
+
+// int	ft_list_add_first(void **_head, void *_node)
+// {
+// 	t_list_item	**head;
+// 	t_list_item	*node;
+// 	t_list_item	*first;
+
+// 	head = (t_list_item **)_head;
+// 	node = (t_list_item *)_node;
+// 	if (!head || !node)
+// 		return (INVALID_ARGS);
+// 	if (!*head)
+// 	{
+// 		*head = node;
+// 		node->next = node;
+// 		node->prev = node;
+// 		return (OK);
+// 	}
+// 	first = *head;
+// 	while (first->prev != *head)
+// 		first = first->prev;
+// 	first->prev = node;
+// 	node->next = first;
+// 	return (OK);
+// }
 
 void	*ft_list_get_next(void **_head, void *_node)
 {
