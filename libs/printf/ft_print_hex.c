@@ -13,6 +13,32 @@
 #include "ft_printf.h"
 #include "../libft/libft.h"
 
+void	put_hex_n(uint32_t v, int digits)
+{
+	static char	hex[] = "0123456789abcdef";
+	char		buf[16];
+	int			i;
+
+	i = digits;
+	while (i > 0)
+	{
+		i--;
+		buf[i] = hex[v & 0xF];
+		v >>= 4;
+	}
+	(void)!write(1, buf, digits);
+}
+
+void	put_hex_byte(uint8_t b)
+{
+	static char	hex[] = "0123456789abcdef";
+	char		buf[2];
+
+	buf[0] = hex[(b >> 4) & 0xF];
+	buf[1] = hex[b & 0xF];
+	(void)!write(1, buf, 2);
+}
+
 int	ft_print_hex(int fd, unsigned long int n, char format, int c_printed)
 {
 	char	*basel;

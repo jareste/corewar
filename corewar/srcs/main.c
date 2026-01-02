@@ -33,6 +33,29 @@ void	init_vm(t_vm *vm)
 	vm->last_alive_player = -1;
 }
 
+void	m_dump_memory(t_vm *vm)
+{
+	int	i;
+	int	j;
+
+	i = 0;
+	while (i < MEM_SIZE)
+	{
+		put_hex_n((uint32_t)i, 4);
+		ft_putstr_fd(" : ", 1);
+		j = 0;
+		while (j < 32)
+		{
+			put_hex_byte(vm->memory[i + j]);
+			if (j != 31)
+				ft_putchar_fd(' ', 1);
+			j++;
+		}
+		ft_putchar_fd('\n', 1);
+		i += 32;
+	}
+}
+
 void	m_run(t_vm *vm)
 {
 	t_proc	*proc;
@@ -40,6 +63,11 @@ void	m_run(t_vm *vm)
 	while (1)
 	{
 		vm->cycle++;
+		if (vm->dump_enabled && vm->cycle == vm->dump_cycle)
+		{
+			m_dump_memory(vm);
+			exit(0);
+		}
 		proc = vm->procs;
 		while (proc)
 		{
