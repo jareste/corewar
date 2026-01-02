@@ -12,20 +12,12 @@
 
 #include <string.h>
 #include "log.h"
+#include "ft_printf.h"
 #include "../corewar.h"
 #include "../process/process.h"
 #include "../operations/operations.h"
 
-t_champ	*get_winner(t_vm *vm)
-{
-	t_champ	*champ;
-
-	ft_assert(vm->last_alive_player > -1, "Invalid last_alive_player");
-	champ = find_champ_by_id(vm, vm->last_alive_player);
-	return (champ);
-}
-
-void	m_kill_deads(t_vm *vm)
+static void	m_kill_deads(t_vm *vm)
 {
 	t_proc	*proc;
 	t_proc	*to_delete;
@@ -47,28 +39,46 @@ void	m_kill_deads(t_vm *vm)
 	}
 }
 
-void	m_check_vm_finished(t_vm *vm)
+static int	m_count_alive_champs(t_vm *vm)
 {
-	t_champ	*winner;
+	t_proc	*proc;
+	int		alive_champs[MAX_PLAYERS];
+	int		i;
+	int		count;
 
-	if (vm->procs == NULL)
+	memset(alive_champs, 0, sizeof(alive_champs));
+	proc = vm->procs;
+	while (proc)
+	{
+		i = proc->regs[0];
+		if (i >= 0 && i < MAX_PLAYERS)
+			alive_champs[i] = 1;
+		proc = ft_list_get_next((void **)&vm->procs, (void *)proc);
+	}
+	count = 0;
+	i = 0;
+	while (i < MAX_PLAYERS)
+	{
+		if (alive_champs[i])
+			count++;
+		i++;
+	}
+	log_msg(LOG_D, "Alive champions count: %d\n", count);
+	return (count);
+}
+
+static void	m_check_vm_finished(t_vm *vm)
+{
+	if ((vm->procs == NULL) || (m_count_alive_champs(vm) == 1))
 	{
 		log_msg(LOG_I, "All processes have died\n");
-		winner = get_winner(vm);
-		if (winner)
-		{
-			log_msg(LOG_I, "The winner is Champion %d: %s\n",
-				winner->id, winner->name);
-		}
-		else
-		{
-			log_msg(LOG_I, "No winner could be determined.\n");
-		}
+		ft_dprintf(1, "The winner is Champion %d: %s\n",
+			vm->last_alive_player+1, vm->la_name);
 		exit(0);
 	}
 }
 
-void	m_decrease_cycle_to_die(t_vm *vm)
+static void	m_decrease_cycle_to_die(t_vm *vm)
 {
 	if (vm->lives_in_period >= NBR_LIVE)
 	{

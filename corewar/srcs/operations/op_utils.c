@@ -70,7 +70,14 @@ int32_t	get_value(t_vm *vm, t_proc *p, t_arg *a)
 	int	addr;
 
 	if (a->type == PARAM_REGISTER)
-		return (p->regs[a->value - 1]);
+    {
+        if (a->value < 1 || a->value > REG_NUMBER)
+        {
+            log_msg(LOG_E, "Invalid register r%d\n", a->value);
+            return (0);
+        }
+        return (p->regs[a->value - 1]);
+    }
 	if (a->type == PARAM_INDIRECT)
 	{
 		addr = p->pc + (a->value % IDX_MOD);

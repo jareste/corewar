@@ -49,6 +49,7 @@ typedef struct s_vm
 	int		last_check_cycle;
 	int		lives_in_period;
 	int		last_alive_player;
+	char	la_name[PROG_NAME_LENGTH + 1];
 	int		aff_enabled;
 }	t_vm;
 

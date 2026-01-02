@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "log.h"
+#include "libft.h"
 #include "corewar.h"
 #include "ft_printf.h"
 #include "decode/decode.h"
@@ -23,7 +24,7 @@
 
 void	init_vm(t_vm *vm)
 {
-	memset(vm->memory, 0, MEM_SIZE);
+	ft_memset(vm->memory, 0, MEM_SIZE);
 	vm->procs = NULL;
 	vm->cycle = 0;
 	vm->cycle_to_die = CYCLE_TO_DIE;
@@ -37,11 +38,14 @@ void	load_champ_into_vm(t_vm *vm, t_champ *champ, int player_id)
 	int		offset;
 
 	offset = (MEM_SIZE / MAX_PLAYERS) * player_id;
-	memcpy(&vm->memory[offset], champ->code, champ->size);
+	ft_memcpy(&vm->memory[offset], champ->code, champ->size);
 	proc = create_process(new_pid(), offset, player_id);
 	log_msg(LOG_I, "Adding %p at offset %p\n", vm->procs, &vm->procs);
+	printf("Creating process %d for champion %d at pc %d\n",
+		proc->id, player_id, offset);
 	ft_list_add_first((void **)&vm->procs, (void *)proc);
 	vm->last_alive_player = player_id;
+	ft_memcpy(vm->la_name, champ->name, PROG_NAME_LENGTH + 1);
 	log_msg(LOG_I, "Loaded champion '%s' at offset %d\n", champ->name, offset);
 }
 
