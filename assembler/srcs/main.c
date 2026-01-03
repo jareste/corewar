@@ -59,6 +59,8 @@ void	m_create_out_file(const char *av, t_header *h,
 	}
 	write_cor_file(outname, h, code, ps->prog_size);
 	free(code);
+	ft_printf("\t%s\n", h->prog_name);
+	ft_printf("\t%s\n", h->comment);
 }
 
 int	main(int argc, char **argv)
@@ -77,9 +79,9 @@ int	main(int argc, char **argv)
 		log_close();
 		return (1);
 	}
+	ft_printf("Assembling %s:\n", argv[1]);
 	m_create_out_file(argv[1], &h, code, &parser_state);
 	log_close();
-	ft_printf("Successfully assembled %s\n", argv[1]);
 	exit(0);
 	return (0);
 }
