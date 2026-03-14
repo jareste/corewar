@@ -65,8 +65,7 @@ static void	m_resolve_label_arg(t_instr *inst, t_label *label_list, int i)
 	label = label_list;
 	while (label)
 	{
-		if (ft_strncmp(label->name, inst->args[i].u_.label,
-				ft_strlen(inst->args[i].u_.label)) == 0)
+		if (ft_strcmp(label->name, inst->args[i].u_.label) == 0)
 		{
 			m_update_label_arg(inst, label, i);
 			break ;
