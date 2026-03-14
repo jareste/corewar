@@ -63,6 +63,16 @@ void	m_create_out_file(const char *av, t_header *h,
 	ft_printf("\t%s\n", h->comment);
 }
 
+int m_check_asm_extension(const char *filename)
+{
+	const char	*extension;
+
+	extension = ft_strrchr(filename, '.');
+	if (extension == NULL || strcmp(extension, ".s") != 0)
+		return (1);
+	return (0);
+}
+
 int	main(int argc, char **argv)
 {
 	t_header		h;
@@ -72,6 +82,11 @@ int	main(int argc, char **argv)
 	if (argc != 2)
 	{
 		ft_dprintf(2, "Usage: %s <source_file>\n", argv[0]);
+		return (1);
+	}
+	if (m_check_asm_extension(argv[1]) != 0)
+	{
+		ft_dprintf(2, "Error: Input file must have .s extension\n");
 		return (1);
 	}
 	if (m_initialize(&h, &parser_state, &code, argv) != 0)

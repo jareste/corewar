@@ -16,6 +16,7 @@
 #include "operations.h"
 #include "../process/process.h"
 #include "libft.h"
+#include "ft_printf.h"
 
 int	mem_addr(int addr)
 {
