@@ -45,6 +45,7 @@ void	m_create_out_file(const char *av, t_header *h,
 	char	outname[256];
 	char	*extension;
 
+	ft_printf("Assembling %s:\n", av);
 	extension = ft_strrchr(av, '.');
 	memset(outname, 0, sizeof(outname));
 	if (extension)
@@ -63,7 +64,7 @@ void	m_create_out_file(const char *av, t_header *h,
 	ft_printf("\t%s\n", h->comment);
 }
 
-int m_check_asm_extension(const char *filename)
+int	m_check_asm_extension(const char *filename)
 {
 	const char	*extension;
 
@@ -79,11 +80,13 @@ int	main(int argc, char **argv)
 	t_parser_state	parser_state;
 	uint8_t			*code;
 
-	if (argc != 2)
+	if (argc < 2)
 	{
-		ft_dprintf(2, "Usage: %s <source_file>\n", argv[0]);
+		ft_dprintf(2, "Usage: %s <source_file> [-v]\n", argv[0]);
 		return (1);
 	}
+	if (argc > 2 && strcmp(argv[2], "-v") == 0)
+		can_print_log(true);
 	if (m_check_asm_extension(argv[1]) != 0)
 	{
 		ft_dprintf(2, "Error: Input file must have .s extension\n");
@@ -94,9 +97,8 @@ int	main(int argc, char **argv)
 		log_close();
 		return (1);
 	}
-	ft_printf("Assembling %s:\n", argv[1]);
 	m_create_out_file(argv[1], &h, code, &parser_state);
 	log_close();
-	exit(0);
+	release_parser_state(&parser_state);
 	return (0);
 }

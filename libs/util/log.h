@@ -40,5 +40,6 @@ void	log_close(void);
 
 void	log_msg(t_log_level level, const char *fmt, ...);
 void	log_msg_time(t_log_level level, const char *fmt, ...);
+bool	can_print_log(bool can_print);
 
 #endif /* LOG_H */

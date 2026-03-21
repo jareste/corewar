@@ -85,10 +85,10 @@ static int	m_count_alive_champs(t_vm *vm)
 
 static void	m_check_vm_finished(t_vm *vm)
 {
-	if ((vm->procs == NULL) || (m_count_alive_champs(vm) == 1))
+	if ((vm->procs == NULL) || (m_count_alive_champs(vm) == 0))
 	{
 		log_msg(LOG_I, "All processes have died\n");
-		ft_dprintf(1, "The winner is Champion %d: '%s'\n",
+		ft_dprintf(1, "Player %d (%s) won!\n",
 			vm->last_alive_player + 1, vm->la_name);
 		exit(0);
 	}

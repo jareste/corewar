@@ -31,5 +31,6 @@ int		ft_print_double(int fd, double n, int precision);
 
 void	put_hex_n(uint32_t v, int digits);
 void	put_hex_byte(uint8_t b);
+int		ft_print_02x(int fd, unsigned int n);
 
 #endif

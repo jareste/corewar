@@ -15,6 +15,7 @@
 #include <time.h>
 #include <string.h>
 #include <stdbool.h>
+#include "../printf/ft_printf.h"
 
 // #ifdef DEBUG
 
@@ -190,14 +191,35 @@ void	log_close(void)
 {
 }
 
+bool	can_print_log(bool can_print)
+{
+	static bool	can_print_log = false;
+
+	if (can_print)
+		can_print_log = true;
+	return (can_print_log);
+}
+
 void	log_msg(t_log_level level, const char *fmt, ...)
 {
+	va_list	args;
+
 	(void)level;
-	(void)fmt;
+	if (!can_print_log(false))
+		return ;
+	va_start(args, fmt);
+	ft_vdprintf(1, fmt, args);
+	va_end(args);
 }
 
 void	log_msg_time(t_log_level level, const char *fmt, ...)
 {
+	va_list	args;
+
 	(void)level;
-	(void)fmt;
+	if (!can_print_log(false))
+		return ;
+	va_start(args, fmt);
+	ft_vdprintf(1, fmt, args);
+	va_end(args);
 }

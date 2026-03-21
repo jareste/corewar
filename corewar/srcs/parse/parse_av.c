@@ -125,9 +125,7 @@ int	parse_av(t_vm *vm, char **av, int ac)
 	int	i;
 
 	i = 0;
-	vm->champ_count = 0;
-	vm->dump_enabled = 0;
-	vm->dump_cycle = 0;
+	can_print_log(true);
 	while (i < ac)
 	{
 		if (ft_strncmp(av[i], "-dump", 5) == 0 && av[i][5] == '\0')

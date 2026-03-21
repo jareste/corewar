@@ -44,15 +44,15 @@ void	m_dump_memory(t_vm *vm)
 		put_hex_n((uint32_t)i, 4);
 		ft_putstr_fd(" : ", 1);
 		j = 0;
-		while (j < 32)
+		while (j < 16)
 		{
 			put_hex_byte(vm->memory[i + j]);
-			if (j != 31)
+			if (j != 15)
 				ft_putchar_fd(' ', 1);
 			j++;
 		}
 		ft_putchar_fd('\n', 1);
-		i += 32;
+		i += 16;
 	}
 }
 

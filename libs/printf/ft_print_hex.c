@@ -31,21 +31,30 @@ void	put_hex_n(uint32_t v, int digits)
 
 void	put_hex_byte(uint8_t b)
 {
-	static char	hex[] = "0123456789abcdef";
-	char		buf[2];
+	static const char	hex[] = "0123456789abcdef";
+	char				buf[2];
 
 	buf[0] = hex[(b >> 4) & 0xF];
 	buf[1] = hex[b & 0xF];
 	(void)!write(1, buf, 2);
 }
 
+int	ft_print_02x(int fd, unsigned int n)
+{
+	static const char	*hex = "0123456789abcdef";
+	char				buf[3];
+
+	buf[0] = hex[(n >> 4) & 0xF];
+	buf[1] = hex[n & 0xF];
+	buf[2] = '\0';
+	return (ft_print_string(fd, buf));
+}
+
 int	ft_print_hex(int fd, unsigned long int n, char format, int c_printed)
 {
-	char	*basel;
-	char	*baseu;
+	static const char	*basel = "0123456789abcdef";
+	static const char	*baseu = "0123456789ABCDEF";
 
-	basel = "0123456789abcdef";
-	baseu = "0123456789ABCDEF";
 	if (n > 15)
 		c_printed = ft_print_hex(fd, n / 16, format, c_printed);
 	if (c_printed == -1)

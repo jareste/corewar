@@ -101,9 +101,9 @@ void	load_champ_code(t_vm *vm, t_champ *champ)
 
 	offset = (MEM_SIZE / MAX_PLAYERS) * (champ->id - 1);
 	ft_memcpy(&vm->memory[offset], champ->code, champ->size);
-	proc = create_process(new_pid(), offset, champ->id - 1);
+	proc = create_process(new_pid(), offset, champ->id);
 	log_msg(LOG_I, "Adding %p at offset %p\n", vm->procs, &vm->procs);
-	printf("Creating process %d for champion %d at pc %d\n",
+	log_msg(LOG_I, "Creating process %d for champion %d at pc %d\n",
 		proc->id, champ->id, offset);
 	ft_list_add_first((void **)&vm->procs, (void *)proc);
 	vm->last_alive_player = champ->id - 1;

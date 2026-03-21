@@ -5,11 +5,9 @@ RM = rm -rf
 CC = cc
 LIB_PATHS = -L../libs/libft -L../libs/printf -L../libs/util
 LIB_INCLUDES = -I../libs/libft -I../libs/printf -I../libs/util -Iinc
-CFLAGS = -Werror -Wextra -Wall -g -fsanitize=address -O3 $(LIB_INCLUDES) $(LIB_PATHS)
-# CFLAGS = -Werror -Wextra -Wall -g -fsanitize=address -O3 -I$(OPENSSL_BUILD_DIR)/include -I$(THIRD_PARTY_PATH)/cJSON -Iinc -DUSE_SSL #-DDEBUG
-# CFLAGS = -Werror -Wextra -Wall -g -fsanitize=thread -O3 -I$(OPENSSL_BUILD_DIR)/include -I$(THIRD_PARTY_PATH)/cJSON -Iinc -DUSE_SSL #-DDEBUG
+CFLAGS = -Werror -Wextra -Wall -O3 $(LIB_INCLUDES) $(LIB_PATHS)
 LDFLAGS = -lm -lutil -lft -lftprintf
-RELEASE_CFLAGS = -Werror -Wextra -Wall -g -O3
+RELEASE_CFLAGS = -Werror -Wextra -Wall -O3
 #########
 
 LIBFT_A = ../libs/libft/libft.a
@@ -45,11 +43,11 @@ $(OBJ_DIR)/%.o: %.c
 all: .gitignore $(LIBS_A)
 	$(MAKE) $(NAME)
 
-debug: CFLAGS = -Werror -Wextra -Wall -g -fsanitize=address -O3 -Iinc -DDEBUG #-lpthread -DDEBUG
+debug: CFLAGS = -Werror -Wextra -Wall -O0 -Iinc -DDEBUG #-lpthread -DDEBUG
 debug: all
 	@echo "DEBUG BUILD DONE  "
 
-dre: CFLAGS = -Werror -Wextra -Wall -g -fsanitize=address -O3 -Iinc -DDEBUG #-lpthread -DDEBUG
+dre: CFLAGS = -Werror -Wextra -Wall -O0 -Iinc -DDEBUG #-lpthread -DDEBUG
 dre: re
 	@echo "DEBUG REBUILD DONE  "
 

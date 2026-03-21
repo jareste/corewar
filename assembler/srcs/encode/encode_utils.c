@@ -18,6 +18,7 @@
 #include <libft.h>
 #include "../asm.h"
 #include "log.h"
+#include "ft_printf.h"
 
 void	m_handle_pcode(t_instr *inst, uint8_t *code, int *pos)
 {
@@ -78,7 +79,8 @@ void	m_print_instr(t_instr *inst, uint8_t *code, int pos)
 	i = inst->offset;
 	while (i < pos)
 	{
-		log_msg(LOG_I, "%02X ", code[i]);
+		ft_print_02x(1, code[i]);
+		log_msg(LOG_I, " ");
 		i++;
 	}
 	log_msg(LOG_I, "\n");
