@@ -43,10 +43,13 @@ typedef struct s_vm
 {
 	uint8_t	memory[MEM_SIZE];
 	t_proc	*procs;
+	t_proc	*procs_to_add;
 	t_champ	champs[MAX_PLAYERS];
 	int		cycle;
+	int		next_cycle_to_die;
 	int		cycle_to_die;
 	int		last_check_cycle;
+	int		checks_since_decrease;
 	int		lives_in_period;
 	int		last_alive_player;
 	char	la_name[PROG_NAME_LENGTH + 1];
@@ -61,5 +64,7 @@ typedef struct s_arg
 	int	type;
 	int	value;
 }	t_arg;
+
+void	dump_memory(t_vm *vm);
 
 #endif /* COREWAR_H */

@@ -23,120 +23,51 @@
 #include "../decode/decode.h"
 #include "parse_internal.h"
 
-static int	load_champ_with_id(t_vm *vm, char *path, int id)
+int	is_cor_file(char *s)
 {
-	int		slot;
-	t_champ	*champ;
+	int	len;
 
-	if (vm->champ_count >= MAX_PLAYERS)
-	{
-		ft_dprintf(2, "Too many champions\n");
-		return (-1);
-	}
-	if (id < 1 || id > MAX_PLAYERS)
-	{
-		ft_dprintf(2, "Invalid champ id: %d\n", id);
-		return (-1);
-	}
-	if (id_used(vm, id))
-	{
-		ft_dprintf(2, "Duplicate champ id: %d\n", id);
-		return (-1);
-	}
-	slot = find_free_slot(vm);
-	champ = &vm->champs[slot];
-	decode_file(path, champ);
-	champ->id = id;
-	vm->champ_count++;
-	load_champ_code(vm, champ);
-	return (0);
+	len = ft_strlen(s);
+	if (len < 5)
+		return (0);
+	return (ft_strncmp(s + len - 4, ".cor", 4) == 0);
 }
 
-static int	handle_dump(t_vm *vm, char **av, int *i, int ac)
+int	is_number_str(char *s)
 {
-	int	n;
+	int	i;
 
-	if (*i + 1 >= ac)
+	if (!s || !s[0])
+		return (0);
+	i = 0;
+	if (s[i] == '+' || s[i] == '-')
+		i++;
+	if (!s[i])
+		return (0);
+	while (s[i])
 	{
-		ft_dprintf(2, "-dump needs a number\n");
-		exit(1);
+		if (!ft_isdigit((unsigned char)s[i]))
+			return (0);
+		i++;
 	}
-	if (vm->dump_enabled)
-	{
-		ft_dprintf(2, "-dump specified twice\n");
-		exit(1);
-	}
-	if (parse_int_strict(av[*i + 1], &n) != 0 || n < 0)
-	{
-		ft_dprintf(2, "Invalid -dump value: %s\n", av[*i + 1]);
-		exit(1);
-	}
-	vm->dump_enabled = 1;
-	vm->dump_cycle = n;
-	*i += 2;
-	return (0);
+	return (1);
 }
 
-static int	handle_n(t_vm *vm, char **av, int *i, int ac)
-{
-	int	id;
-
-	if (*i + 2 >= ac)
-	{
-		ft_dprintf(2, "-n needs: <id> <file.cor>\n");
-		exit(1);
-	}
-	if (parse_int_strict(av[*i + 1], &id) != 0)
-	{
-		ft_dprintf(2, "Invalid id for -n: %s\n", av[*i + 1]);
-		exit(1);
-	}
-	if (!is_cor_file(av[*i + 2]))
-	{
-		ft_dprintf(2, "Invalid champ file: %s\n", av[*i + 2]);
-		exit(1);
-	}
-	if (load_champ_with_id(vm, av[*i + 2], id) != 0)
-		exit(1);
-	*i += 3;
-	return (0);
-}
-
-static int	handle_cor(t_vm *vm, char *path)
-{
-	int	id;
-
-	if (!is_cor_file(path))
-	{
-		ft_dprintf(2, "Invalid file: %s\n", path);
-		exit(1);
-	}
-	id = find_free_id(vm);
-	if (id < 0)
-	{
-		ft_dprintf(2, "No free champion id left\n");
-		exit(1);
-	}
-	return (load_champ_with_id(vm, path, id));
-}
-
-int	parse_av(t_vm *vm, char **av, int ac)
+int	parse_av(t_vm *vm, char **av, int ac, bool *bonus)
 {
 	int	i;
 
 	i = 0;
-	can_print_log(true);
+	*bonus = false;
 	while (i < ac)
 	{
-		if (ft_strncmp(av[i], "-dump", 5) == 0 && av[i][5] == '\0')
-			handle_dump(vm, av, &i, ac);
-		else if (ft_strncmp(av[i], "-n", 2) == 0 && av[i][2] == '\0')
-			handle_n(vm, av, &i, ac);
-		else
+		if (ft_strncmp(av[i], "-b", 2) == 0 && av[i][2] == '\0')
 		{
-			handle_cor(vm, av[i]);
-			i++;
+			*bonus = true;
+			i += 1;
 		}
+		else
+			handle_av(vm, av, ac, &i);
 	}
 	if (vm->champ_count == 0)
 	{

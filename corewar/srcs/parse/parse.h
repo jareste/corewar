@@ -13,6 +13,6 @@
 #ifndef PARSE_H
 # define PARSE_H
 
-int	parse_av(t_vm *vm, char **av, int ac);
+int	parse_av(t_vm *vm, char **av, int ac, bool *bonus);
 
 #endif /* PARSE_H */

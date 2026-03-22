@@ -43,6 +43,7 @@ static void	m_kill_deads(t_vm *vm)
 		{
 			log_msg(LOG_I, "Process %d: has died (last live at cycle %d)\n",
 				proc->id, proc->last_live_cycle);
+			log_msg(LOG_D, "  vm->cycle=%d, vm->cycle_to_die=%d\n", vm->cycle, vm->cycle_to_die);
 			to_delete = proc;
 			proc = ft_list_get_next((void **)&vm->procs, (void *)proc);
 			ft_list_pop((void **)&vm->procs, (void *)to_delete);
@@ -87,28 +88,47 @@ static void	m_check_vm_finished(t_vm *vm)
 {
 	if ((vm->procs == NULL) || (m_count_alive_champs(vm) == 0))
 	{
-		log_msg(LOG_I, "All processes have died\n");
-		ft_dprintf(1, "Player %d (%s) won!\n",
-			vm->last_alive_player + 1, vm->la_name);
+		log_msg(LOG_I, "All processes have died at cycle %d\n", vm->cycle);
+		log_msg(LOG_I, "cycle_to_die was %d\n", vm->cycle_to_die);
+		ft_dprintf(1, "cycle_to_die was %d\n", vm->cycle_to_die);
+		ft_dprintf(1, "Player %d (%s) won! DEBUG(%d)\n",
+			vm->last_alive_player, vm->la_name, vm->cycle);
 		exit(0);
 	}
 }
 
 static void	m_decrease_cycle_to_die(t_vm *vm)
 {
+	bool	decerased;
+
+	decerased = false;
+	printf("checking on cycle %d, lives_in_period=%d\n", vm->cycle, vm->lives_in_period);
 	if (vm->lives_in_period >= NBR_LIVE)
 	{
 		vm->cycle_to_die -= CYCLE_DELTA;
+		vm->checks_since_decrease = 0;
+		decerased = true;
 		log_msg(LOG_I,
-			"Decreasing cycle_to_die to %d\n", vm->cycle_to_die);
+			"Decreasing cycle_to_die(1) to %d\n", vm->cycle_to_die);
+		printf("Decreasing cycle_to_die(1) to %d\n", vm->cycle_to_die);
 	}
-	vm->lives_in_period = 0;
-	if (((vm->cycle / vm->cycle_to_die) % vm->cycle_to_die) == 0)
+	else
+		vm->checks_since_decrease++;
+	if (!decerased && vm->checks_since_decrease >= MAX_CHECKS)
 	{
+		vm->checks_since_decrease = 0;
+		log_msg(LOG_I, "vm->cycle=%d, vm->cycle_to_die=%d\n", vm->cycle, vm->cycle_to_die);
+		printf("vm->cycle=%d, vm->cycle_to_die=%d\n", vm->cycle, vm->cycle_to_die);
 		vm->cycle_to_die -= CYCLE_DELTA;
 		log_msg(LOG_I,
-			"Decreasing cycle_to_die to %d\n", vm->cycle_to_die);
+			"Decreasing cycle_to_die(2) to %d\n", vm->cycle_to_die);
+		printf("Decreasing cycle_to_die(2) to %d\n", vm->cycle_to_die);
+		if (vm->cycle_to_die < 0)
+			vm->cycle_to_die = 0;
 	}
+	vm->lives_in_period = 0;
+	vm->next_cycle_to_die = vm->cycle + vm->cycle_to_die;
+	printf("Next cycle to die will be %d\n", vm->next_cycle_to_die);
 }
 
 void	proc_check_deads(t_vm *vm)

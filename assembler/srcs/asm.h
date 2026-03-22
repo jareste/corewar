@@ -19,7 +19,7 @@
 
 typedef enum e_arg_kind
 {
-	ARG_REG,
+	ARG_REG = 0,
 	ARG_DIR,
 	ARG_IND,
 	ARG_LABEL_DIR,

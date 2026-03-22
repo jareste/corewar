@@ -102,6 +102,10 @@ void	load_champ_code(t_vm *vm, t_champ *champ)
 	offset = (MEM_SIZE / MAX_PLAYERS) * (champ->id - 1);
 	ft_memcpy(&vm->memory[offset], champ->code, champ->size);
 	proc = create_process(new_pid(), offset, champ->id);
+	proc->op_wait = op_tab[champ->code[0]].nb_cycles;
+	proc->opcode = champ->code[0];
+	printf("Process %d: Created for champion %d at pc %d with initial opcode %d and wait %d\n",
+		proc->id, champ->id, proc->pc, champ->code[0], proc->op_wait);
 	log_msg(LOG_I, "Adding %p at offset %p\n", vm->procs, &vm->procs);
 	log_msg(LOG_I, "Creating process %d for champion %d at pc %d\n",
 		proc->id, champ->id, offset);

@@ -177,14 +177,18 @@ void	step_proc(t_vm *vm, t_proc *p)
 	if (p->op_wait > 0)
 	{
 		p->op_wait--;
+		if (p->op_wait == 0)
+			execute_instruction(vm, p);
 		return ;
 	}
-	execute_instruction(vm, p);
+
 	opcode = vm->memory[p->pc];
 	if (opcode < 1 || opcode > 16)
 	{
-		log_msg(LOG_W, "Process %d: Inv opcode %02X at pc %d. Adv 1b.\n",
+		printf("Process %d: Invalid opcode %d at pc %d. Advancing 1 byte.\n",
 			p->id, opcode, p->pc);
+		// log_msg(LOG_W, "Process %d: Inv opcode %d at pc %d. Adv 1b.\n",
+		// 	p->id, opcode, p->pc);
 		p->pc = (p->pc + 1) % MEM_SIZE;
 		return ;
 	}

@@ -59,3 +59,18 @@ void	exec_advance_pc(t_exec_ctx *c)
 		return ;
 	c->proc->pc = (c->prev_pc + c->adv) % MEM_SIZE;
 }
+
+void merge_procs(t_vm *vm)
+{
+	t_proc	*proc;
+	t_proc	*next;
+
+	proc = vm->procs_to_add;
+	while (proc)
+	{
+		next = ft_list_get_next((void **)&vm->procs_to_add, (void *)proc);
+		ft_list_add_last((void **)&vm->procs, (void *)proc);
+		proc = next;
+	}
+	vm->procs_to_add = NULL;
+}

@@ -22,6 +22,7 @@
 #include "decode/decode.h"
 #include "process/process.h"
 #include "parse/parse.h"
+#include "bonus/bonus.h"
 
 void	init_vm(t_vm *vm)
 {
@@ -29,11 +30,12 @@ void	init_vm(t_vm *vm)
 	vm->procs = NULL;
 	vm->cycle = 0;
 	vm->cycle_to_die = CYCLE_TO_DIE;
+	vm->next_cycle_to_die = CYCLE_TO_DIE;
 	vm->last_check_cycle = 0;
 	vm->last_alive_player = -1;
 }
 
-void	m_dump_memory(t_vm *vm)
+void	dump_memory(t_vm *vm)
 {
 	int	i;
 	int	j;
@@ -65,7 +67,7 @@ void	m_run(t_vm *vm)
 		vm->cycle++;
 		if (vm->dump_enabled && vm->cycle == vm->dump_cycle)
 		{
-			m_dump_memory(vm);
+			dump_memory(vm);
 			exit(0);
 		}
 		proc = vm->procs;
@@ -74,17 +76,19 @@ void	m_run(t_vm *vm)
 			step_proc(vm, proc);
 			proc = ft_list_get_next((void **)&vm->procs, (void *)proc);
 		}
-		if (vm->cycle % vm->cycle_to_die == 0)
+		if (vm->cycle >= vm->next_cycle_to_die)
 		{
 			log_msg(LOG_I, "Cycle %d: cycle to die check\n", vm->cycle);
 			proc_check_deads(vm);
 		}
+		merge_procs(vm);
 	}
 }
 
 int	main(int argc, char **argv)
 {
 	t_vm	vm;
+	bool	bonus;
 
 	if (argc < 2)
 	{
@@ -97,11 +101,13 @@ int	main(int argc, char **argv)
 		return (1);
 	}
 	init_vm(&vm);
-	if (parse_av(&vm, argv + 1, argc - 1) != 0)
+	if (parse_av(&vm, argv + 1, argc - 1, &bonus) != 0)
 	{
 		log_close();
 		return (1);
 	}
+	if (bonus)
+		handle_bonus(&vm);
 	m_run(&vm);
 	return (0);
 }

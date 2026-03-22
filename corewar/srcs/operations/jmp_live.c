@@ -24,7 +24,8 @@ int	m_op_live(t_vm *vm, t_proc *proc, t_arg *args)
 	t_champ	*champ;
 
 	champ_id = args[0].value;
-	champ = find_champ_by_id(vm, champ_id + 1);
+	// printf("Process %d: LIVE called with arg %d\n", proc->id, champ_id);
+	champ = find_champ_by_id(vm, champ_id);
 	proc->last_live_cycle = vm->cycle;
 	vm->lives_in_period++;
 	log_msg(LOG_I,
@@ -34,8 +35,8 @@ int	m_op_live(t_vm *vm, t_proc *proc, t_arg *args)
 	{
 		vm->last_alive_player = champ_id;
 		ft_memcpy(vm->la_name, champ->name, PROG_NAME_LENGTH + 1);
-		log_msg(LOG_I, "Champ %d (%s) is reported alive!\n",
-			champ->id, champ->name);
+		log_msg(LOG_I, "Champ %d (%s) is reported alive at cycle %d!\n",
+			champ->id, champ->name, vm->cycle);
 	}
 	else
 	{
@@ -66,6 +67,8 @@ int	m_op_zjmp(t_vm *vm, t_proc *proc, t_arg *args)
 	}
 	else
 	{
+		printf("Process %d: ZJMP failed (carry = 0)\n",
+			proc->id);
 		log_msg(LOG_I, "Process %d: ZJMP failed (carry = 0)\n",
 			proc->id);
 		proc->pc = (proc->pc + 3) % MEM_SIZE;

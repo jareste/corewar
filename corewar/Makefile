@@ -5,7 +5,8 @@ RM = rm -rf
 CC = cc
 LIB_PATHS = -L../libs/libft -L../libs/printf -L../libs/util
 LIB_INCLUDES = -I../libs/libft -I../libs/printf -I../libs/util -Iinc
-CFLAGS = -Werror -Wextra -Wall -O3 $(LIB_INCLUDES) $(LIB_PATHS)
+# CFLAGS = -Werror -Wextra -Wall -O3 $(LIB_INCLUDES) $(LIB_PATHS)
+CFLAGS = -Werror -Wextra -Wall -O0 -g -fsanitize=address $(LIB_INCLUDES) $(LIB_PATHS)
 LDFLAGS = -lm -lutil -lft -lftprintf
 RELEASE_CFLAGS = -Werror -Wextra -Wall -O3
 #########
@@ -17,11 +18,12 @@ LIBS_A = $(LIBFT_A) $(PRINTF_A) $(UTIL_A)
 
 #########
 FILES = main op decode process operations check_deads exec_read_arg exec_dec_arg_types \
-		process_utils fork or st ld jmp_live and_aff add_sub op_utils parse_av parse_av2 parse_av3
+		process_utils fork or st ld jmp_live and_aff add_sub op_utils parse_av parse_av2 parse_av3 \
+		bonus
 
 SRC = $(addsuffix .c, $(FILES))
 
-vpath %.c srcs inc ../op srcs/decode srcs/process srcs/operations srcs/parse
+vpath %.c srcs inc ../op srcs/decode srcs/process srcs/operations srcs/parse srcs/bonus
 #########
 
 OBJ_DIR = objs

@@ -28,9 +28,11 @@ static int	m_do_fork(t_vm *vm, t_proc *p, int new_pc)
 	memcpy(child->regs, p->regs, sizeof(p->regs));
 	child->carry = p->carry;
 	child->last_live_cycle = p->last_live_cycle;
-	child->op_wait = 0;
-	child->opcode = 0;
-	ft_list_add_last((void **)&vm->procs, (void *)child);
+	child->op_wait = op_tab[vm->memory[new_pc]].nb_cycles;
+	printf("Process %d: Forking new process %d at pc %d with opcode %d and wait %d\n",
+		p->id, child->id, child->pc, vm->memory[new_pc], child->op_wait);
+	child->opcode = vm->memory[new_pc];
+	ft_list_add_last((void **)&vm->procs_to_add, (void *)child);
 	log_msg(LOG_I,
 		"Process %d: fork → child %d at pc %d\n",
 		p->id, child->id, child->pc);

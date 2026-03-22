@@ -10,17 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef PARSE_INTERNAL_H
-# define PARSE_INTERNAL_H
+#ifndef BONUS_H
+# define BONUS_H
 
-int		is_number_str(char *s);
-int		is_cor_file(char *s);
+void	handle_bonus(t_vm *vm);
 
-int		parse_int_strict(char *s, int *out);
-int		id_used(t_vm *vm, int id);
-int		find_free_slot(t_vm *vm);
-void	load_champ_code(t_vm *vm, t_champ *champ);
-int		find_free_id(t_vm *vm);
-void	handle_av(t_vm *vm, char **av, int ac, int *i);
-
-#endif /* PARSE_INTERNAL_H */
+#endif /* BONUS_H */

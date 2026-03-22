@@ -75,7 +75,6 @@ int	m_op_lldi(t_vm *vm, t_proc *p, t_arg *args)
 int	m_op_lld(t_vm *vm, t_proc *p, t_arg *args)
 {
 	int32_t	arg1;
-	int32_t	arg2;
 	int32_t	addr;
 
 	log_msg(LOG_D, "Process [%d] %p: LLD called\n", p->id, (void *)p);
@@ -89,30 +88,28 @@ int	m_op_lld(t_vm *vm, t_proc *p, t_arg *args)
 	if (args[1].value < 1 || args[1].value > REG_NUMBER)
 	{
 		log_msg(LOG_W, "Invalid register r%d in LLD\n", args[1].value);
+		printf("Process %d: Invalid register r%d in LLD\n", p->id, args[1].value);
 		return (0);
 	}
-	arg2 = get_value(vm, p, &args[1]);
-	p->regs[arg2 - 1] = arg1;
+	p->regs[args[1].value - 1] = arg1;
 	p->carry = (arg1 == 0);
 	log_msg(LOG_I,
 		"Process %d: lld %d → r%d\n",
-		p->id, arg1, arg2);
+		p->id, arg1, args[1].value);
 	return (0);
 }
 
 int	m_op_ld(t_vm *vm, t_proc *p, t_arg *args)
 {
 	int32_t	arg1;
-	int32_t	arg2;
 	t_arg	lld_args[2];
 
 	(void)vm;
 	log_msg(LOG_D, "Process [%d] %p: LD called\n", p->id, (void *)p);
 	arg1 = get_value(vm, p, &args[0]);
-	arg2 = get_value(vm, p, &args[1]);
 	lld_args[0].type = PARAM_DIRECT;
 	lld_args[0].value = arg1;
 	lld_args[1].type = PARAM_REGISTER;
-	lld_args[1].value = arg2;
+	lld_args[1].value = args[1].value;
 	return (m_op_lld(vm, p, lld_args));
 }
