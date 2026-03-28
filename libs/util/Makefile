@@ -13,7 +13,7 @@
 NAME = libutil.a
 
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -I. -L../libft -lft -I../libft
+LOG_CFLAGS = -Wall -Wextra -Werror -I. #-L../libft -lft -I../libft
 SRC_PATH = .
 
 SRCS = log.c \
@@ -35,7 +35,7 @@ $(NAME): $(OBJS)
 	ar rcs $(NAME) $(OBJS)
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(LOG_CFLAGS) -c $< -o $@
 
 clean:
 	rm -f $(OBJS)

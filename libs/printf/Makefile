@@ -13,7 +13,7 @@
 NAME = libftprintf.a
 
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -I../libft
+C_PRINTF_FLAGS = -Wall -Wextra -Werror -I../libft
 SRC_PATH = .
 
 SRCS = ft_printf.c \
@@ -35,7 +35,8 @@ $(NAME): $(OBJS)
 	ar rcs $(NAME) $(OBJS)
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	echo "compiling with: $(CC) $(C_PRINTF_FLAGS) -c $< -o $@"
+	$(CC) $(C_PRINTF_FLAGS) -c $< -o $@
 
 clean:
 	rm -f $(OBJS)
