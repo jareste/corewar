@@ -60,7 +60,7 @@ void	exec_advance_pc(t_exec_ctx *c)
 	c->proc->pc = (c->prev_pc + c->adv) % MEM_SIZE;
 }
 
-void merge_procs(t_vm *vm)
+void	merge_procs(t_vm *vm)
 {
 	t_proc	*proc;
 	t_proc	*next;

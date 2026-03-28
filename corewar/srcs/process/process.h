@@ -24,7 +24,6 @@ void	proc_check_deads(t_vm *vm);
 
 /* check_deads.c */
 void	proc_check_deads(t_vm *vm);
-
-void    merge_procs(t_vm *vm);
+void	merge_procs(t_vm *vm);
 
 #endif /* PROCESS_H */

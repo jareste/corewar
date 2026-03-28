@@ -57,6 +57,7 @@ typedef struct s_vm
 	int		champ_count;
 	int		dump_enabled;
 	int		dump_cycle;
+	int		champs_number;
 }	t_vm;
 
 typedef struct s_arg

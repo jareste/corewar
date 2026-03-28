@@ -50,7 +50,7 @@ static int	load_champ_with_id(t_vm *vm, char *path, int id)
 	decode_file(path, champ);
 	champ->id = id;
 	vm->champ_count++;
-	load_champ_code(vm, champ);
+	load_champ_code(vm, champ, slot);
 	return (0);
 }
 

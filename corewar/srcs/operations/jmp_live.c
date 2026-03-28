@@ -24,7 +24,6 @@ int	m_op_live(t_vm *vm, t_proc *proc, t_arg *args)
 	t_champ	*champ;
 
 	champ_id = args[0].value;
-	// printf("Process %d: LIVE called with arg %d\n", proc->id, champ_id);
 	champ = find_champ_by_id(vm, champ_id);
 	proc->last_live_cycle = vm->cycle;
 	vm->lives_in_period++;

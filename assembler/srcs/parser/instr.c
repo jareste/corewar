@@ -41,8 +41,8 @@ static char	*m_fill_instr(char *s, int line_no, t_instr **out_inst)
 	op = m_find_op(s, len);
 	if (!op)
 	{
-		ft_dprintf(2, "Error: Unknown operation '%.*s' at line %d\n",
-			(int)len, s, line_no);
+		ft_dprintf(2, "Error: Unknown operation '%s' at line %d\n",
+			s, line_no);
 		return (NULL);
 	}
 	log_msg(LOG_I, "Instruction '%s' at line %d\n", op->name, line_no);

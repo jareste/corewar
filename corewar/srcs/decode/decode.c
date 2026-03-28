@@ -85,16 +85,16 @@ int	decode_file(const char *filename, t_champ *champ)
 		exit(1);
 	}
 	read_size = m_read_file(fd, header_buf, sizeof(header_buf));
-	if (read_size < 0 || (size_t)read_size < sizeof(header_buf))
+	if (read_size <= 0 || (size_t)read_size < sizeof(header_buf))
 	{
 		ft_dprintf(2, "Error: Could not read header from file %s\n", filename);
 		exit(1);
 	}
 	m_read_header_champ(champ, header_buf);
 	read_size = m_read_file(fd, champ->code, champ->size);
-	if (read_size < 0 || (size_t)read_size < champ->size)
+	if (read_size <= 0 || (size_t)read_size < champ->size)
 	{
-		ft_dprintf(2, "Error: sizes differ %zu %zd\n", champ->size, read_size);
+		ft_dprintf(2, "Error: sizes differ or empty champ code.\n");
 		exit(1);
 	}
 	close(fd);

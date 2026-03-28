@@ -19,7 +19,7 @@ int		is_cor_file(char *s);
 int		parse_int_strict(char *s, int *out);
 int		id_used(t_vm *vm, int id);
 int		find_free_slot(t_vm *vm);
-void	load_champ_code(t_vm *vm, t_champ *champ);
+void	load_champ_code(t_vm *vm, t_champ *champ, int slot);
 int		find_free_id(t_vm *vm);
 void	handle_av(t_vm *vm, char **av, int ac, int *i);
 

@@ -53,12 +53,39 @@ int	is_number_str(char *s)
 	return (1);
 }
 
+void	m_count_champs(t_vm *vm, char **av, int ac)
+{
+	int	i;
+	int	count;
+
+	i = 0;
+	count = 0;
+	while (i < ac)
+	{
+		if (is_cor_file(av[i]))
+			count++;
+		i++;
+	}
+	if (count > MAX_PLAYERS)
+	{
+		ft_dprintf(2, "Error: Too many champions provided: %d\n", count);
+		exit(1);
+	}
+	if (count == 0)
+	{
+		ft_dprintf(2, "Error: No champion files provided\n");
+		exit(1);
+	}
+	vm->champs_number = count;
+}
+
 int	parse_av(t_vm *vm, char **av, int ac, bool *bonus)
 {
 	int	i;
 
 	i = 0;
 	*bonus = false;
+	m_count_champs(vm, av, ac);
 	while (i < ac)
 	{
 		if (ft_strncmp(av[i], "-b", 2) == 0 && av[i][2] == '\0')

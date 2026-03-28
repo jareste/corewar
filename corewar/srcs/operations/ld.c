@@ -88,7 +88,7 @@ int	m_op_lld(t_vm *vm, t_proc *p, t_arg *args)
 	if (args[1].value < 1 || args[1].value > REG_NUMBER)
 	{
 		log_msg(LOG_W, "Invalid register r%d in LLD\n", args[1].value);
-		printf("Process %d: Invalid register r%d in LLD\n", p->id, args[1].value);
+		printf("Process %d: Inv register r%d in LLD\n", p->id, args[1].value);
 		return (0);
 	}
 	p->regs[args[1].value - 1] = arg1;
