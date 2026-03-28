@@ -68,4 +68,12 @@ typedef struct s_arg
 
 void	dump_memory(t_vm *vm);
 
+# define USAGE_MSG "Usage: %s [-n <number>] <source_file>\
+ [-dump <cycle>] [-b] [-v]\n\
+\tOptions:\n\
+\t  -n <number>    Specify champion ID (1-%d)\n\
+\t  -dump <cycle>  Enable dump mode at the specified cycle\n\
+\t  -b             Run in bonus mode\n\
+\t  -v             Enable verbose mode\n"
+
 #endif /* COREWAR_H */

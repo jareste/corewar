@@ -26,10 +26,22 @@ typedef struct args
 	char**	argv;
 } t_args;
 
+#define HELP_CMD "Available commands:\n" \
+				 "  dump             - Dump the memory state\n" \
+				 "  procs            - Dump the processes state\n" \
+				 "  run <cycles>     - Run the VM for a specified number of cycles\n" \
+				 "  pkill <proc_id>  - Kill a process by its ID\n" \
+				 "  write <addr> <value> - Write a value to a memory address\n" \
+				 "  q                - Quit bonus mode\n" \
+				 "  [h][?]           - Show this help message\n"
+
 void m_dump_memory(t_vm *vm, t_args *args);
 void m_dump_procs(t_vm *vm, t_args *args);
 void m_run_cycles(t_vm *vm, t_args *args);
 void m_quit(t_vm *vm, t_args *args);
+void m_help(t_vm *vm, t_args *args);
+void m_kill_process(t_vm *vm, t_args *args);
+void m_write_mem(t_vm *vm, t_args *args);
 
 typedef void	(*t_cmd_func)(t_vm *, t_args *args);
 
@@ -43,7 +55,13 @@ static const t_cmd	m_cmds[] = {
 	{"dump", m_dump_memory},
 	{"procs", m_dump_procs},
 	{"run", m_run_cycles},
+	{"pkill", m_kill_process},
 	{"q", m_quit},
+	{"quit", m_quit},
+	{"h", m_help},
+	{"write", m_write_mem},
+	{"help", m_help},
+	{"?", m_help},
 	{NULL, NULL}
 };
 
@@ -142,6 +160,11 @@ void m_run_cycles(t_vm *vm, t_args *args)
 {
 	int	cycles;
 
+	if (args->argc < 2)
+	{
+		log_msg(LOG_W, "Usage: run <cycles>\n");
+		return ;
+	}
 	cycles = ft_atoi(args->argv[1]);
 	log_msg(LOG_I, "Running for %d cycles...\n", cycles);
 	while (cycles)
@@ -170,15 +193,81 @@ void m_quit(t_vm *vm, t_args *args)
 	exit(0);
 }
 
+void m_help(t_vm *vm, t_args *args)
+{
+	(void)vm;
+	(void)args;
+	ft_dprintf(1, "%s", HELP_CMD);
+}
+
+void m_kill_process(t_vm *vm, t_args *args)
+{
+	int	proc_id;
+
+	if (args->argc < 2)
+	{
+		log_msg(LOG_W, "Usage: pkill <process_id>\n");
+		return ;
+	}
+	proc_id = ft_atoi(args->argv[1]);
+	t_proc	*proc = vm->procs;
+	while (proc)
+	{
+		if (proc->id == proc_id)
+		{
+			ft_list_pop((void **)&vm->procs, (void *)proc);
+			log_msg(LOG_I, "Process[%d] %p has been killed\n",
+				proc->id, (void *)proc);
+			free(proc);
+			return ;
+		}
+		proc = ft_list_get_next((void **)&vm->procs, (void *)proc);
+	}
+	log_msg(LOG_W, "Process %d not found\n", proc_id);
+}
+
+void m_write_mem(t_vm *vm, t_args *args)
+{
+	int	addr;
+	int	value;
+	char* endptr;
+
+	if (args->argc < 3)
+	{
+		log_msg(LOG_W, "Usage: write <address> <value>\n");
+		return ;
+	}
+	addr = strtol(args->argv[1], &endptr, 10);
+	if (*endptr != '\0')
+	{
+		log_msg(LOG_W, "Invalid address: %s\n", args->argv[1]);
+		return ;
+	}
+	value = strtol(args->argv[2], &endptr, 10);
+	if (*endptr != '\0')
+	{
+		log_msg(LOG_W, "Invalid value: %s\n", args->argv[2]);
+		return ;
+	}
+	if (addr < 0 || addr >= MEM_SIZE)
+	{
+		log_msg(LOG_W, "Address out of bounds: %d\n", addr);
+		return ;
+	}
+	vm->memory[addr] = (uint8_t)(value & 0xFF);
+	log_msg(LOG_I, "Wrote value %d to memory address %d\n", value, addr);
+}
+
 void	handle_bonus(t_vm *vm)
 {
 	t_args	args;
 	int32_t	i;
 
 	memset(&args, 0, sizeof(args));
+	can_print_log(true);
 	while (1)
 	{
-		ft_dprintf(1, "Bonus mode - cycle %d\n> ", vm->cycle);
+		ft_dprintf(1, "\nBonus mode - cycle %d ('?' for help)\n> ", vm->cycle);
 		if (!m_build_args(get_next_line(0), &args))
 			exit(1);
 		if (args.argc == 0)

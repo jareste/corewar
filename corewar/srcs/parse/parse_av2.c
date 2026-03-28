@@ -99,7 +99,7 @@ void	load_champ_code(t_vm *vm, t_champ *champ, int slot)
 	t_proc	*proc;
 	int		offset;
 
-	offset = (MEM_SIZE / vm->champs_number) * (slot - 1);
+	offset = (MEM_SIZE / vm->champs_number) * (slot);
 	ft_memcpy(&vm->memory[offset], champ->code, champ->size);
 	proc = create_process(new_pid(), offset, champ->id);
 	proc->op_wait = op_tab[champ->code[0]].nb_cycles;
@@ -108,7 +108,7 @@ void	load_champ_code(t_vm *vm, t_champ *champ, int slot)
 	log_msg(LOG_I, "Creating process %d for champion %d at pc %d\n",
 		proc->id, champ->id, offset);
 	ft_list_add_first((void **)&vm->procs, (void *)proc);
-	vm->last_alive_player = champ->id - 1;
+	vm->last_alive_player = champ->id;
 	ft_memcpy(vm->la_name, champ->name, PROG_NAME_LENGTH + 1);
 	log_msg(LOG_I, "Loaded champion[%d] '%s' at offset %d\n",
 		champ->id, champ->name, offset);

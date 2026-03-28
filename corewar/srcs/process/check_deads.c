@@ -90,9 +90,8 @@ static void	m_check_vm_finished(t_vm *vm)
 	{
 		log_msg(LOG_I, "All processes have died at cycle %d\n", vm->cycle);
 		log_msg(LOG_I, "cycle_to_die was %d\n", vm->cycle_to_die);
-		ft_dprintf(1, "cycle_to_die was %d\n", vm->cycle_to_die);
-		ft_dprintf(1, "Player %d (%s) won! DEBUG(%d)\n",
-			vm->last_alive_player, vm->la_name, vm->cycle);
+		ft_dprintf(1, "Player %d (%s) won!\n",
+			vm->last_alive_player, vm->la_name);
 		exit(0);
 	}
 }

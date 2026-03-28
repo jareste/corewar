@@ -26,12 +26,9 @@
 
 void	init_vm(t_vm *vm)
 {
-	ft_memset(vm->memory, 0, MEM_SIZE);
-	vm->procs = NULL;
-	vm->cycle = 0;
+	ft_memset(vm, 0, sizeof(t_vm));
 	vm->cycle_to_die = CYCLE_TO_DIE;
 	vm->next_cycle_to_die = CYCLE_TO_DIE;
-	vm->last_check_cycle = 0;
 	vm->last_alive_player = -1;
 }
 
@@ -92,7 +89,7 @@ int	main(int argc, char **argv)
 
 	if (argc < 2)
 	{
-		ft_dprintf(2, "Usage: %s <source_file>\n", argv[0]);
+		ft_dprintf(2, USAGE_MSG, argv[0], MAX_PLAYERS);
 		return (1);
 	}
 	if (log_init() != 0)

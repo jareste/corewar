@@ -66,8 +66,6 @@ int	m_op_zjmp(t_vm *vm, t_proc *proc, t_arg *args)
 	}
 	else
 	{
-		printf("Process %d: ZJMP failed (carry = 0)\n",
-			proc->id);
 		log_msg(LOG_I, "Process %d: ZJMP failed (carry = 0)\n",
 			proc->id);
 		proc->pc = (proc->pc + 3) % MEM_SIZE;

@@ -29,8 +29,6 @@ static int	m_do_fork(t_vm *vm, t_proc *p, int new_pc)
 	child->carry = p->carry;
 	child->last_live_cycle = p->last_live_cycle;
 	child->op_wait = op_tab[vm->memory[new_pc]].nb_cycles;
-	printf("Process %d: new process %d at pc %d with opcode %d and wait %d\n",
-		p->id, child->id, child->pc, vm->memory[new_pc], child->op_wait);
 	child->opcode = vm->memory[new_pc];
 	ft_list_add_last((void **)&vm->procs_to_add, (void *)child);
 	log_msg(LOG_I,

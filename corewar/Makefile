@@ -6,7 +6,7 @@ CC = cc
 LIB_PATHS = -L../libs/libft -L../libs/printf -L../libs/util
 LIB_INCLUDES = -I../libs/libft -I../libs/printf -I../libs/util -Iinc
 # CFLAGS = -Werror -Wextra -Wall -O3 $(LIB_INCLUDES) $(LIB_PATHS)
-CFLAGS = -Werror -Wextra -Wall -O0 -g -fsanitize=address $(LIB_INCLUDES)
+CFLAGS = -Werror -Wextra -Wall -O0 -g $(LIB_INCLUDES)
 LDFLAGS = $(LIB_PATHS) -lm -lutil -lft -lftprintf
 RELEASE_CFLAGS = -Werror -Wextra -Wall -O3
 #########
