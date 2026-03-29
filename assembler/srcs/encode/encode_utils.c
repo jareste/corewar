@@ -74,6 +74,8 @@ void	m_print_instr(t_instr *inst, uint8_t *code, int pos)
 {
 	int	i;
 
+	if (!can_print_log(false))
+		return ;
 	log_msg(LOG_I, "Encoded instruction '%s'[%d] at offset %d: ",
 		inst->op->name, inst->line_no, inst->offset);
 	i = inst->offset;
