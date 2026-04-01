@@ -28,13 +28,13 @@ int	m_op_or(t_vm *vm, t_proc *p, t_arg *args)
 	arg1 = get_value(vm, p, &args[0]);
 	arg2 = get_value(vm, p, &args[1]);
 	dest = args[2].value;
-	if (dest < 1 || dest > REG_NUMBER)
+	if (dest < 0 || dest >= REG_NUMBER)
 	{
 		log_msg(LOG_W, "Invalid register %d in OR\n", dest);
 		return (0);
 	}
 	result = arg1 | arg2;
-	p->regs[dest - 1] = result;
+	p->regs[dest] = result;
 	p->carry = (result == 0);
 	log_msg(LOG_I, "Process %d: or %d | %d = %d → r%d\n",
 		p->id, arg1, arg2, result, dest);
@@ -51,13 +51,13 @@ int	m_op_xor(t_vm *vm, t_proc *p, t_arg *args)
 	arg1 = get_value(vm, p, &args[0]);
 	arg2 = get_value(vm, p, &args[1]);
 	dest = args[2].value;
-	if (dest < 1 || dest > REG_NUMBER)
+	if (dest < 0 || dest >= REG_NUMBER)
 	{
 		log_msg(LOG_W, "Invalid register %d in XOR\n", dest);
 		return (0);
 	}
 	result = arg1 ^ arg2;
-	p->regs[dest - 1] = result;
+	p->regs[dest] = result;
 	p->carry = (result == 0);
 	log_msg(LOG_I, "Process %d: xor %d ^ %d = %d → r%d\n",
 		p->id, arg1, arg2, result, dest);

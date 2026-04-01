@@ -26,13 +26,13 @@ int	m_op_aff(t_vm *vm, t_proc *p, t_arg *args)
 	if (!vm->aff_enabled)
 		return (0);
 	reg_num = args[0].value;
-	if (reg_num < 1 || reg_num > REG_NUMBER)
+	if (reg_num < 0 || reg_num >= REG_NUMBER)
 	{
 		log_msg(LOG_W, "Process %d: AFF with invalid register r%d\n",
 			p->id, reg_num);
 		return (0);
 	}
-	c = (char)(p->regs[reg_num - 1] % 256);
+	c = (char)(p->regs[reg_num] % 256);
 	log_msg(LOG_I, "Process %d: AFF r%d -> '%c'\n",
 		p->id, reg_num, c);
 	return (0);
@@ -55,13 +55,13 @@ int	m_op_and(t_vm *vm, t_proc *p, t_arg *args)
 	arg1 = get_value(vm, p, &args[0]);
 	arg2 = get_value(vm, p, &args[1]);
 	dest = args[2].value;
-	if (dest < 1 || dest > REG_NUMBER)
+	if (dest < 0 || dest >= REG_NUMBER)
 	{
 		log_msg(LOG_W, "Invalid register %d in AND\n", dest);
 		return (0);
 	}
 	result = arg1 & arg2;
-	p->regs[dest - 1] = result;
+	p->regs[dest] = result;
 	p->carry = (result == 0);
 	log_msg(LOG_I,
 		"Process %d: and %d & %d = %d → r%d\n",

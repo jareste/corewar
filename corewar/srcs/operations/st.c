@@ -63,20 +63,20 @@ int	m_op_st(t_vm *vm, t_proc *p, t_arg *args)
 	int32_t	src;
 	int		addr;
 
-	if (args[0].value < 1 || args[0].value > REG_NUMBER)
+	if (args[0].value < 0 || args[0].value >= REG_NUMBER)
 	{
 		return (0);
 	}
-	src = p->regs[args[0].value - 1];
+	src = p->regs[args[0].value];
 	if (args[1].type == PARAM_REGISTER)
 	{
-		if (args[1].value < 1 || args[1].value > REG_NUMBER)
+		if (args[1].value < 0 || args[1].value >= REG_NUMBER)
 		{
 			log_msg(LOG_W, "Process %d: ST with invalid dst r%d\n",
 				p->id, args[1].value);
 			return (0);
 		}
-		p->regs[args[1].value - 1] = src;
+		p->regs[args[1].value] = src;
 	}
 	else if (args[1].type == PARAM_INDIRECT)
 	{
@@ -100,13 +100,13 @@ int	m_op_sti(t_vm *vm, t_proc *p, t_arg *args)
 	int32_t	addr;
 	int16_t	offset;
 
-	if ((args[0].value < 1) || (args[0].value > REG_NUMBER))
+	if ((args[0].value < 0) || (args[0].value >= REG_NUMBER))
 	{
 		log_msg(LOG_W, "Process %d: STI with invalid src r%d\n",
 			p->id, args[0].value);
 		return (0);
 	}
-	reg_val = p->regs[args[0].value - 1];
+	reg_val = p->regs[args[0].value];
 	arg2 = get_value(vm, p, &args[1]);
 	arg3 = get_value(vm, p, &args[2]);
 	offset = (int16_t)((arg2 + arg3) % IDX_MOD);

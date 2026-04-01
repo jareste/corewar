@@ -28,7 +28,7 @@ int	m_op_ldi(t_vm *vm, t_proc *p, t_arg *args)
 
 	log_msg(LOG_D, "Process [%d] %p: LDI called\n", p->id, (void *)p);
 	reg = args[2].value;
-	if (reg < 1 || reg > REG_NUMBER)
+	if (reg < 0 || reg >= REG_NUMBER)
 	{
 		log_msg(LOG_W, "Invalid register r%d in LDI\n", reg);
 		return (0);
@@ -37,7 +37,7 @@ int	m_op_ldi(t_vm *vm, t_proc *p, t_arg *args)
 	b = get_value(vm, p, &args[1]);
 	addr = p->pc + ((a + b) % IDX_MOD);
 	val = m_mem_read(vm, addr, 4);
-	p->regs[reg - 1] = val;
+	p->regs[reg] = val;
 	p->carry = (val == 0);
 	log_msg(LOG_I,
 		"Process %d: ldi (%d + %d) %% IDX_MOD -> [%d] = %d → r%d\n",
@@ -55,7 +55,7 @@ int	m_op_lldi(t_vm *vm, t_proc *p, t_arg *args)
 
 	log_msg(LOG_D, "Process [%d] %p: LLDI called\n", p->id, (void *)p);
 	reg = args[2].value;
-	if (reg < 1 || reg > REG_NUMBER)
+	if (reg < 0 || reg >= REG_NUMBER)
 	{
 		log_msg(LOG_W, "Invalid register r%d in LLDI\n", reg);
 		return (0);
@@ -64,7 +64,7 @@ int	m_op_lldi(t_vm *vm, t_proc *p, t_arg *args)
 	b = get_value(vm, p, &args[1]);
 	addr = p->pc + (a + b);
 	val = m_mem_read(vm, addr, 4);
-	p->regs[reg - 1] = val;
+	p->regs[reg] = val;
 	p->carry = (val == 0);
 	log_msg(LOG_I,
 		"Process %d: lldi (%d + %d) -> [%d] = %d → r%d\n",
@@ -85,12 +85,12 @@ int	m_op_lld(t_vm *vm, t_proc *p, t_arg *args)
 	}
 	else
 		arg1 = get_value(vm, p, &args[0]);
-	if (args[1].value < 1 || args[1].value > REG_NUMBER)
+	if (args[1].value < 0 || args[1].value >= REG_NUMBER)
 	{
 		log_msg(LOG_W, "Invalid register r%d in LLD\n", args[1].value);
 		return (0);
 	}
-	p->regs[args[1].value - 1] = arg1;
+	p->regs[args[1].value] = arg1;
 	p->carry = (arg1 == 0);
 	log_msg(LOG_I,
 		"Process %d: lld %d → r%d\n",
