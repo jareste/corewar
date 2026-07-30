@@ -84,5 +84,5 @@ int	cmds(t_cmd_ctx *ctx)
 	else if (ctx->name)
 		return (m_exec_cmd(cmds, ctx));
 	ft_assert(0, "m_cmds called with invalid parameters");
-    return (-1);
+	return (-1);
 }
