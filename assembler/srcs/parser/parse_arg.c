@@ -39,7 +39,7 @@ static int	m_parse_tok_reg(const char *s, size_t len, t_arg *out)
 	log_msg(LOG_D, "Register number parsed: %d\n", reg);
 	if (m_parse_reg(s + 1, &reg) != 0)
 		return (-1);
-	if (reg < 0 || reg > REG_NUMBER)
+	if (reg < 1 || reg > REG_NUMBER)
 		return (-1);
 	out->type = ARG_REG;
 	out->u_.value = reg;

@@ -81,6 +81,11 @@ static int	m_handle_dot_code(char *line, int line_no, t_parser_state *p_st)
 			p++;
 		if (!*p)
 			break ;
+		if (n >= (int)sizeof(tmp))
+		{
+			ft_dprintf(2, "Error: .code line too long at line %u\n", line_no);
+			exit(1);
+		}
 		tmp[n++] = m_str_to_hex(p, line_no);
 		p += 2;
 	}

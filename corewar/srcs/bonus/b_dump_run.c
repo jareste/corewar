@@ -59,6 +59,7 @@ static void	m_run_one_cycle(t_vm *vm)
 			vm->cycle, vm->cycle_to_die);
 		proc_check_deads(vm);
 	}
+	merge_procs(vm);
 }
 
 void	run_cycles(t_vm *vm, t_args *args)

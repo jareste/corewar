@@ -147,22 +147,27 @@ void	decode_inst(const uint8_t *code, int code_len, int offset)
 
 #endif
 
+static void	m_fail_advance(t_proc *proc)
+{
+	proc->pc = (proc->pc + 1) % MEM_SIZE;
+}
+
 void	execute_instruction(t_vm *vm, t_proc *proc)
 {
 	t_exec_ctx	c;
 
 	exec_init(&c, vm, proc);
 	if (exec_fetch_opcode(&c))
-		return ;
+		return (m_fail_advance(proc));
 	log_msg(LOG_I, "Process [%d] %p: Executing opcode %s at pc %d.\n",
 		proc->id, (void *)proc, c.op->name, c.prev_pc);
 	decode_inst(vm->memory, MEM_SIZE, c.prev_pc);
 	if (exec_decode_arg_types(&c))
-		return ;
+		return (m_fail_advance(proc));
 	if (exec_read_args(&c))
-		return ;
+		return (m_fail_advance(proc));
 	if (exec_validate_regs(&c))
-		return ;
+		return (m_fail_advance(proc));
 	if (op_execute(vm, proc, c.args, c.opcode) != 0)
 		log_msg(LOG_E, "Process %d: Error executing opcode %s\n",
 			proc->id, c.op->name);

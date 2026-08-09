@@ -32,8 +32,8 @@ void	*ft_calloc(size_t count, size_t size)
 	void	*ptr;
 
 	ptr = malloc(count * size);
-	ft_memset(ptr, 0, count * size);
 	ft_assert(ptr != NULL, "calloc failed");
+	ft_memset(ptr, 0, count * size);
 	return (ptr);
 }
 
