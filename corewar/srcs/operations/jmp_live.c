@@ -16,6 +16,7 @@
 #include "operations.h"
 #include "../process/process.h"
 #include "libft.h"
+#include "ft_printf.h"
 #include "op_internals.h"
 
 int	m_op_live(t_vm *vm, t_proc *proc, t_arg *args)
@@ -34,6 +35,8 @@ int	m_op_live(t_vm *vm, t_proc *proc, t_arg *args)
 	{
 		vm->last_alive_player = champ_id;
 		ft_memcpy(vm->la_name, champ->name, PROG_NAME_LENGTH + 1);
+		ft_dprintf(1, "A process shows that player %d (%s) is alive\n",
+			champ->id, champ->name);
 		log_msg(LOG_I, "Champ %d (%s) is reported alive at cycle %d!\n",
 			champ->id, champ->name, vm->cycle);
 	}

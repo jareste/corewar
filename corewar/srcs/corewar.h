@@ -53,7 +53,6 @@ typedef struct s_vm
 	int		lives_in_period;
 	int		last_alive_player;
 	char	la_name[PROG_NAME_LENGTH + 1];
-	int		aff_enabled;
 	int		champ_count;
 	int		dump_enabled;
 	int		dump_cycle;

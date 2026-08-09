@@ -69,7 +69,7 @@ void	merge_procs(t_vm *vm)
 	while (proc)
 	{
 		next = ft_list_get_next((void **)&vm->procs_to_add, (void *)proc);
-		ft_list_add_last((void **)&vm->procs, (void *)proc);
+		ft_list_add_first((void **)&vm->procs, (void *)proc);
 		proc = next;
 	}
 	vm->procs_to_add = NULL;

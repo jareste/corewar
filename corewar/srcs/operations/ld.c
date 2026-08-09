@@ -38,7 +38,6 @@ int	m_op_ldi(t_vm *vm, t_proc *p, t_arg *args)
 	addr = p->pc + ((a + b) % IDX_MOD);
 	val = m_mem_read(vm, addr, 4);
 	p->regs[reg - 1] = val;
-	p->carry = (val == 0);
 	log_msg(LOG_I,
 		"Process %d: ldi (%d + %d) %% IDX_MOD -> [%d] = %d → r%d\n",
 		p->id, a, b, addr, val, reg);

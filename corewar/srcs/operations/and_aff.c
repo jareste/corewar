@@ -23,8 +23,7 @@ int	m_op_aff(t_vm *vm, t_proc *p, t_arg *args)
 	int		reg_num;
 	char	c;
 
-	if (!vm->aff_enabled)
-		return (0);
+	(void)vm;
 	reg_num = args[0].value;
 	if (reg_num < 1 || reg_num > REG_NUMBER)
 	{
@@ -33,6 +32,7 @@ int	m_op_aff(t_vm *vm, t_proc *p, t_arg *args)
 		return (0);
 	}
 	c = (char)(p->regs[reg_num - 1] % 256);
+	ft_putchar_fd(c, 1);
 	log_msg(LOG_I, "Process %d: AFF r%d -> '%c'\n",
 		p->id, reg_num, c);
 	return (0);

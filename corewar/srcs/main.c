@@ -43,15 +43,15 @@ void	dump_memory(t_vm *vm)
 		put_hex_n((uint32_t)i, 4);
 		ft_putstr_fd(" : ", 1);
 		j = 0;
-		while (j < 16)
+		while (j < 32)
 		{
 			put_hex_byte(vm->memory[i + j]);
-			if (j != 15)
+			if (j != 31)
 				ft_putchar_fd(' ', 1);
 			j++;
 		}
 		ft_putchar_fd('\n', 1);
-		i += 16;
+		i += 32;
 	}
 }
 
@@ -62,16 +62,16 @@ void	m_run(t_vm *vm)
 	while (1)
 	{
 		vm->cycle++;
-		if (vm->dump_enabled && vm->cycle == vm->dump_cycle)
-		{
-			dump_memory(vm);
-			exit(0);
-		}
 		proc = vm->procs;
 		while (proc)
 		{
 			step_proc(vm, proc);
 			proc = ft_list_get_next((void **)&vm->procs, (void *)proc);
+		}
+		if (vm->dump_enabled && vm->cycle == vm->dump_cycle)
+		{
+			dump_memory(vm);
+			exit(0);
 		}
 		if (vm->cycle >= vm->next_cycle_to_die)
 		{
