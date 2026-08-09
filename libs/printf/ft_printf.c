@@ -12,25 +12,25 @@
 
 #include "ft_printf.h"
 
-int	ft_check_format(int fd, char format, va_list args)
+int	ft_check_format(int fd, char format, va_list *args)
 {
 	int	c_printed;
 
 	c_printed = 0;
 	if (format == 'c')
-		c_printed = ft_print_char_fd(fd, va_arg(args, int), 1);
+		c_printed = ft_print_char_fd(fd, va_arg(*args, int), 1);
 	else if (format == 's')
-		c_printed = ft_print_string(fd, va_arg(args, char *));
+		c_printed = ft_print_string(fd, va_arg(*args, char *));
 	else if (format == 'p')
-		c_printed = ft_print_ptr(fd, va_arg(args, void *));
+		c_printed = ft_print_ptr(fd, va_arg(*args, void *));
 	else if (format == 'd' || format == 'i')
-		c_printed = ft_print_decimal(fd, va_arg(args, int));
+		c_printed = ft_print_decimal(fd, va_arg(*args, int));
 	else if (format == 'u')
-		c_printed = ft_print_uinteger(fd, va_arg(args, unsigned int));
+		c_printed = ft_print_uinteger(fd, va_arg(*args, unsigned int));
 	else if (format == 'x' || format == 'X')
-		c_printed = ft_print_hex(fd, va_arg(args, unsigned int), format, 0);
+		c_printed = ft_print_hex(fd, va_arg(*args, unsigned int), format, 0);
 	else if (format == 'f')
-		c_printed = ft_print_double(fd, va_arg(args, double), 6);
+		c_printed = ft_print_double(fd, va_arg(*args, double), 6);
 	else if (format == '%')
 	{
 		c_printed = ft_print_char_fd(fd, '%', 1);
@@ -51,7 +51,7 @@ int	bucle(int fd, const char *s, va_list args, int c_printed)
 		aux = 0;
 		if (s[i] == '%')
 		{
-			aux = ft_check_format(fd, s[i + 1], args);
+			aux = ft_check_format(fd, s[i + 1], &args);
 			if (aux == -1)
 				return (-1);
 			c_printed += aux;

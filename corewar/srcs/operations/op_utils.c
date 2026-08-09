@@ -72,12 +72,12 @@ int32_t	get_value(t_vm *vm, t_proc *p, t_arg *a)
 
 	if (a->type == PARAM_REGISTER)
 	{
-		if (a->value < 0 || a->value >= REG_NUMBER)
+		if (a->value < 1 || a->value > REG_NUMBER)
 		{
-			ft_dprintf(2, "Invalid register r%d\n", a->value);
-			exit(EXIT_FAILURE);
+			log_msg(LOG_W, "Invalid register r%d\n", a->value);
+			return (0);
 		}
-		return (p->regs[a->value]);
+		return (p->regs[a->value - 1]);
 	}
 	if (a->type == PARAM_INDIRECT)
 	{
