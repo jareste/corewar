@@ -208,7 +208,7 @@ void	log_msg(t_log_level level, const char *fmt, ...)
 	if (!can_print_log(false))
 		return ;
 	va_start(args, fmt);
-	ft_vdprintf(1, fmt, args);
+	ft_vdprintf(1, fmt, &args);
 	va_end(args);
 }
 
@@ -220,6 +220,6 @@ void	log_msg_time(t_log_level level, const char *fmt, ...)
 	if (!can_print_log(false))
 		return ;
 	va_start(args, fmt);
-	ft_vdprintf(1, fmt, args);
+	ft_vdprintf(1, fmt, &args);
 	va_end(args);
 }

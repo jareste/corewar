@@ -19,7 +19,7 @@ LIBS_A = $(LIBFT_A) $(PRINTF_A) $(UTIL_A)
 #########
 FILES = main op decode process operations check_deads exec_read_arg exec_dec_arg_types \
 		process_utils fork or st ld jmp_live and_aff add_sub op_utils parse_av parse_av2 parse_av3 \
-		bonus b_cmds b_dump_run b_kill_write b_quit_help
+		bonus b_cmds b_dump_run b_kill_write b_quit_help exec_instruction
 
 SRC = $(addsuffix .c, $(FILES))
 

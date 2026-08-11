@@ -40,7 +40,7 @@ int	ft_check_format(int fd, char format, va_list *args)
 	return (c_printed);
 }
 
-int	bucle(int fd, const char *s, va_list args, int c_printed)
+int	bucle(int fd, const char *s, va_list *args, int c_printed)
 {
 	int	i;
 	int	aux;
@@ -51,7 +51,7 @@ int	bucle(int fd, const char *s, va_list args, int c_printed)
 		aux = 0;
 		if (s[i] == '%')
 		{
-			aux = ft_check_format(fd, s[i + 1], &args);
+			aux = ft_check_format(fd, s[i + 1], args);
 			if (aux == -1)
 				return (-1);
 			c_printed += aux;
@@ -75,7 +75,7 @@ int	ft_printf(const char *s, ...)
 
 	c_printed = 0;
 	va_start(args, s);
-	c_printed = bucle(1, s, args, c_printed);
+	c_printed = bucle(1, s, &args, c_printed);
 	va_end(args);
 	return (c_printed);
 }
@@ -87,12 +87,12 @@ int	ft_dprintf(int fd, const char *s, ...)
 
 	c_printed = 0;
 	va_start(args, s);
-	c_printed = bucle(fd, s, args, c_printed);
+	c_printed = bucle(fd, s, &args, c_printed);
 	va_end(args);
 	return (c_printed);
 }
 
-int	ft_vdprintf(int fd, const char *s, va_list args)
+int	ft_vdprintf(int fd, const char *s, va_list *args)
 {
 	int	c_printed;
 

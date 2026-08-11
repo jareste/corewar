@@ -28,8 +28,7 @@ int	m_op_live(t_vm *vm, t_proc *proc, t_arg *args)
 	champ = find_champ_by_id(vm, champ_id);
 	proc->last_live_cycle = vm->cycle;
 	vm->lives_in_period++;
-	log_msg(LOG_I,
-		"Process %d: LIVE called for champ %d\n",
+	log_msg(LOG_I, "Process %d: LIVE called for champ %d\n",
 		proc->id, champ_id);
 	if (champ)
 	{
@@ -42,9 +41,7 @@ int	m_op_live(t_vm *vm, t_proc *proc, t_arg *args)
 	}
 	else
 	{
-		log_msg(LOG_W,
-			"LIVE called with invalid champ id %d\n",
-			champ_id);
+		log_msg(LOG_W, "LIVE called with invalid champ id %d\n", champ_id);
 	}
 	return (0);
 }

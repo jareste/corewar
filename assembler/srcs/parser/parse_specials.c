@@ -66,6 +66,18 @@ static uint8_t	m_str_to_hex(char *p, int line_no)
 	return ((uint8_t)ft_strtoul(byte_str, NULL, 16));
 }
 
+static t_instr	*m_fill_instr(int line_no, uint8_t *data, int data_len)
+{
+	t_instr	*inst;
+
+	inst = ft_calloc(1, sizeof(t_instr));
+	inst->line_no = line_no;
+	inst->raw = ft_malloc(data_len);
+	ft_memcpy(inst->raw, data, data_len);
+	inst->raw_len = data_len;
+	return (inst);
+}
+
 static int	m_handle_dot_code(char *line, int line_no, t_parser_state *p_st)
 {
 	t_instr	*inst;
@@ -81,7 +93,7 @@ static int	m_handle_dot_code(char *line, int line_no, t_parser_state *p_st)
 			p++;
 		if (!*p)
 			break ;
-		if (n >= (int)sizeof(tmp))
+		if (n >= (int) sizeof(tmp))
 		{
 			ft_dprintf(2, "Error: .code line too long at line %u\n", line_no);
 			exit(1);
@@ -89,12 +101,7 @@ static int	m_handle_dot_code(char *line, int line_no, t_parser_state *p_st)
 		tmp[n++] = m_str_to_hex(p, line_no);
 		p += 2;
 	}
-	inst = ft_calloc(1, sizeof(t_instr));
-	inst->line_no = line_no;
-	inst->op = NULL;
-	inst->raw = ft_malloc(n);
-	ft_memcpy(inst->raw, tmp, n);
-	inst->raw_len = n;
+	inst = m_fill_instr(line_no, tmp, n);
 	ft_list_add_last((void **)&p_st->i_l, (void *)inst);
 	return (1);
 }

@@ -37,4 +37,7 @@ int		exec_validate_regs(t_exec_ctx *c);
 void	exec_init(t_exec_ctx *c, t_vm *vm, t_proc *proc);
 int		exec_fetch_opcode(t_exec_ctx *c);
 
+/* exec_instruction.c */
+void	execute_instruction(t_vm *vm, t_proc *proc);
+
 #endif /* PROCESS_INTERNAL_H */
